@@ -22,7 +22,10 @@
       "BASEAPP_REMOVE_WEBENGINE": "1",
       "BASEAPP_DISABLE_NUMPY": "1",
       "PYTHONDONTWRITEBYTECODE": "1"
-    }
+    },
+    "build-args": [
+      "--socket=x11"
+    ]
   },
   "cleanup-commands": [
     "/app/cleanup-BaseApp.sh"
@@ -41,8 +44,8 @@
         "install -Dm644 packaging/flatpak/check-runtime.py /app/share/piper-kirigami/check-runtime.py",
         "install -Dm644 THIRD_PARTY_NOTICES.md /app/share/licenses/piper-kirigami/THIRD_PARTY_NOTICES.md",
         "QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software python3 packaging/flatpak/check-runtime.py",
-        "PYTHONPATH=/app/test-tools:. QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software python3 -m pytest -q tests/qt/test_backend.py tests/test_qt_diagrams.py tests/qt/test_kde_ui.py tests/qt/test_handbook.py tests/qt/test_desktop_style.py",
-        "PYTHONPATH=/app/test-tools:. QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software python3 tools/verify-kde-settings.py --skip-captures --output /tmp/piper-settings-qa",
+        "PYTHONPATH=/app/test-tools:. QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software python3 -m pytest -q tests/qt/test_backend.py tests/test_qt_diagrams.py tests/qt/test_kde_ui.py tests/qt/test_handbook.py tests/qt/test_desktop_style.py",
+        "PYTHONPATH=/app/test-tools:. QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software python3 tools/verify-kde-settings.py --skip-captures --output /tmp/piper-settings-qa",
         "piper-kirigami --mock --headless --screenshot /tmp/piper-build-smoke.png",
         "test -s /tmp/piper-build-smoke.png"
       ],

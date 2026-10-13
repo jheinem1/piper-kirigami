@@ -92,7 +92,7 @@ KirigamiDialogs.Dialog {
             visible:picker.eventMode
             Layout.fillWidth:true
                         Label { text:"Event:" }
-            ComboBox {
+            NativeComboBox {
                 objectName:"valuePickerEventType"
                 model:picker.allowDelay ? ["Key down","Key up","Delay"] : ["Key down","Key up"]
                 currentIndex:picker.eventKind-1

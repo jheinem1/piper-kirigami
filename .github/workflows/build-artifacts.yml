@@ -27,12 +27,12 @@ jobs:
       - name: Install build tools and matching Flathub dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder dbus-x11
+          sudo apt-get install -y flatpak flatpak-builder dbus-x11 xvfb xauth
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak install --user --noninteractive -y flathub \
             org.kde.Platform/x86_64/6.11 org.kde.Sdk/x86_64/6.11 io.qt.PySide.BaseApp/x86_64/6.11
       - name: Build, test model and QML, and export development bundle
-        run: dbus-run-session -- bash packaging/flatpak/build.sh "$RUNNER_TEMP/flatpak-artifacts"
+        run: xvfb-run -a -s "-screen 0 1600x1100x24" dbus-run-session -- bash packaging/flatpak/build.sh "$RUNNER_TEMP/flatpak-artifacts"
       - name: Install bundle and verify its runtime in this disposable runner
         run: |
           flatpak install --user --noninteractive -y --bundle \

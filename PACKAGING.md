@@ -36,10 +36,10 @@ flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/fl
 flatpak install --user flathub \
   org.kde.Platform/x86_64/6.11 org.kde.Sdk/x86_64/6.11 io.qt.PySide.BaseApp/x86_64/6.11
 python3 -m unittest discover -s packaging/tests -v
-bash packaging/flatpak/build.sh ../piper-artifacts HEAD
+xvfb-run -a -s "-screen 0 1600x1100x24" dbus-run-session -- bash packaging/flatpak/build.sh ../piper-artifacts HEAD
 ```
 
-The script packages the **selected Git commit**, ignoring uncommitted edits. Commit intended source changes first. It builds in a temporary directory, runs the active backend/SVG/KDE UI tests without real hardware, exports the bundle and removes its temporary build tree. It does not add remotes, install prerequisites, install the resulting app, or publish anything. Use `dbus-run-session -- bash ...` on a headless builder without a session bus.
+The script packages the **selected Git commit**, ignoring uncommitted edits. Commit intended source changes first. It builds in a temporary directory, runs the active backend/SVG/KDE UI tests without real hardware, exports the bundle and removes its temporary build tree. It does not add remotes, install prerequisites, install the resulting app, or publish anything. Install Xvfb and xauth on the builder. Native popup keyboard checks use the real X11 display created by `xvfb-run`; offscreen rendering is reserved for icon and installed-startup smoke checks. The build-only X11 socket is not an additional installed-app permission.
 
 The source snapshot, including upstream SVG symlinks, is made with `git archive`. Its project version comes only from `qt-build/meson.build`. The archive has stable Git timestamps, fixed archive permissions and deterministic gzip headers. `source-info.json` records its commit and SHA-256. Source archive reproducibility is tested; full Flatpak/RPM bit-for-bit reproducibility across changing runtimes, package repositories or builder versions is not promised.
 

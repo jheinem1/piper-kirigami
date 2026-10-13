@@ -13,6 +13,9 @@ APP_ID=io.github.jheinem1.PiperKirigami
 BRANCH=development
 ARCH=x86_64
 
+# Native popup input needs an actual display. CI supplies an isolated Xvfb.
+[[ -n "${DISPLAY:-}" ]] || { echo 'Run this build inside xvfb-run; native UI checks require an X display.' >&2; exit 1; }
+
 for tool in flatpak flatpak-builder git python3; do command -v "$tool" >/dev/null; done
 python3 "$ROOT/packaging/prepare-source.py" --ref "$REF" --output "$WORK/source"
 cp "$WORK/source/BUILD-INFO.json" "$OUT/source-info.json"

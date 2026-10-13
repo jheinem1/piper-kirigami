@@ -992,7 +992,9 @@ def scenario_led(h):
     original = deepcopy(h.backend.selectedProfile["leds"][0])
     h.click_target("leds", 0)
     h.text("ledColor", "badcolor")
-    h.click("ledSave")
+    assert not h.find("ledSave").isEnabled()
+    assert h.find("ledValidation").property("visible")
+    assert h.find("ledDialog").property("inputValidation")
     assert h.find("ledDialog").property("visible") and not h.backend.dirty
     h.click("ledCancel")
     assert h.backend.selectedProfile["leds"][0] == original

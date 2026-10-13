@@ -95,7 +95,7 @@ Dialog {
         width: mappingScroll.availableWidth
         spacing: Kirigami.Units.largeSpacing*2
         Label { text: "Assignment"; font.bold: true }
-        ComboBox { id: actionType; objectName: "mappingType"; Accessible.name: "Assignment type"; model: dialog.typeLabels; Layout.fillWidth: true }
+        NativeComboBox { id: actionType; objectName: "mappingType"; Accessible.name: "Assignment type"; model: dialog.typeLabels; Layout.fillWidth: true }
         RowLayout {
             visible: dialog.types[actionType.currentIndex] === "button"
             Label { text: "Mouse button number" }
@@ -103,7 +103,7 @@ Dialog {
         }
         ColumnLayout {
             visible: dialog.types[actionType.currentIndex] === "key"; Layout.fillWidth: true
-            ComboBox {
+            NativeComboBox {
                 id: keyPicker; objectName: "keyPicker"; Accessible.name: "Keyboard key"
                 model: backendObject.keyChoices || []; textRole: "label"; valueRole: "value"
                 Layout.fillWidth: true
@@ -117,7 +117,7 @@ Dialog {
             RowLayout { Label { text: "Linux keycode" } SpinBox { id: keyCode; objectName: "keyCode"; Accessible.name: "Linux keycode"; from: 1; to: 767; editable: true } }
             Label { text: "For chords, choose Macro and add key press/release events."; opacity: 0.65; wrapMode: Text.WordWrap; Layout.fillWidth: true }
         }
-        ComboBox { id: specialAction; objectName: "specialAction"; Accessible.name: "Special action"; visible: dialog.types[actionType.currentIndex] === "special"; model: backendObject.specialActions || []; textRole: "label"; valueRole: "value"; Layout.fillWidth: true }
+        NativeComboBox { id: specialAction; objectName: "specialAction"; Accessible.name: "Special action"; visible: dialog.types[actionType.currentIndex] === "special"; model: backendObject.specialActions || []; textRole: "label"; valueRole: "value"; Layout.fillWidth: true }
         ColumnLayout {
             visible: dialog.types[actionType.currentIndex] === "macro"; Layout.fillWidth: true; spacing: Kirigami.Units.largeSpacing
             Label { text: "Shortcut"; opacity: 0.65; font: Kirigami.Theme.smallFont }
@@ -131,7 +131,7 @@ Dialog {
             Label { visible: dialog.advancedMacro; text: "Macro sequence"; font.bold: true }
             RowLayout {
                 visible: dialog.advancedMacro
-                ComboBox { id: eventType; objectName: "macroEventType"; Accessible.name: "Macro event type"; model: ["Key press", "Key release", "Wait (ms)"]; Layout.fillWidth: true }
+                NativeComboBox { id: eventType; objectName: "macroEventType"; Accessible.name: "Macro event type"; model: ["Key press", "Key release", "Wait (ms)"]; Layout.fillWidth: true }
                 SpinBox { id: eventValue; objectName: "macroEventValue"; Accessible.name: eventType.currentIndex===2 ? "Delay in milliseconds" : "Macro event Linux keycode"; from: 0; to: 65535; value: 30; editable: true }
                 Button { text: "Add"; Accessible.name: "Add macro event"; onClicked: { try { let ev=JSON.parse(macroJson.text); ev.push([eventType.currentIndex+1,eventValue.value]); macroJson.text=JSON.stringify(ev) } catch(e) { dialog.validation="Correct the JSON before adding an event." } } }
             }

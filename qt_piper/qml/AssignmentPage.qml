@@ -265,7 +265,7 @@ Pane {
                 Layout.preferredWidth:Math.min(actionType.implicitWidth+Kirigami.Units.gridUnit*2,Kirigami.Units.gridUnit*18)
                 implicitWidth:actionType.implicitWidth
                 implicitHeight:actionType.implicitHeight+Kirigami.Units.smallSpacing*2
-                ComboBox {
+                NativeComboBox {
                     id:actionType; objectName:"mappingType"
                     width:parent.width; y:Kirigami.Units.smallSpacing
                     Accessible.name:"Assignment type"
@@ -320,7 +320,7 @@ Pane {
                 Kirigami.FormData.buddyFor: specialAction
                 implicitWidth: specialAction.implicitWidth
                 implicitHeight: specialAction.implicitHeight+Kirigami.Units.smallSpacing*2
-                ComboBox {
+                NativeComboBox {
                     id: specialAction; objectName: "specialAction"
                     width: parent.width
                     y: Kirigami.Units.smallSpacing

@@ -88,13 +88,13 @@ The sanitized source passes **126 tests plus 1,434 SVG subtests**, including **9
 
 Native UI verification passed a **20-scenario baseline** (3,946 real inputs), followed by four explicit-OK flow reruns (**502 inputs**) and four final picker/event/14-point/error-recovery checks (**902 inputs**), plus a final empty-state copy check (**12 inputs**). All reported zero QML warnings. A final four-group settings check passed **251 inputs**, also with zero QML warnings. Reports preserve the actual source hashes and revision boundaries; these are not presented as one unchanged full-suite run. Current screenshots were visually inspected. Ruff/Black, staged Meson installation and installed-tree mock startup also pass. See [verification evidence](docs/verification/).
 
-The cloud development runtime uses Qt/PySide6 6.8.2. Read-only target checks used Qt/PySide6 6.11.2 and ratbagd 0.18/API 2: all 120 editable bindings across three G600 profiles matched the existing daemon state, without mouse changes. The target SDK icon lookup and real pixmap checks pass after correcting icon search paths. The earlier prototype’s device/profile/lighting selectors also passed real Wayland/KWin mouse and keyboard interaction on Qt 6.11.2. Offscreen native popup routing differs (Home does not reliably select the first item); target validation of the latest child-page design remains required.
+The cloud development runtime uses Qt/PySide6 6.8.2. Read-only target checks used Qt/PySide6 6.11.2 and ratbagd 0.18/API 2: all 120 editable bindings across three G600 profiles matched the existing daemon state, without mouse changes. The target SDK icon lookup and real pixmap checks pass after correcting icon search paths. The earlier prototype’s device/profile/lighting selectors also passed real Wayland/KWin mouse and keyboard interaction on Qt 6.11.2. Qt 6.11 exposed a first-open native popup focus bug: the outer popup received keyboard events while its list lacked active focus. Native selectors now focus their popup content when opened. Package builds run interaction checks on an isolated Xvfb display; target validation of the latest child-page design remains required.
 
 Actual Flatpak/RPM artifact builds and installed-package checks require a successful CI run. Prepared packaging and successful dependency probes alone do not establish a working release bundle.
 
 ```sh
-QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software python -m pytest -q tests/test_qt_diagrams.py tests/qt
-QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software python tools/verify-kde-ui.py --output evidence-kde
+xvfb-run -a -s "-screen 0 1600x1100x24" env QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software python -m pytest -q tests/test_qt_diagrams.py tests/qt
+xvfb-run -a -s "-screen 0 1600x1100x24" env QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software python tools/verify-kde-ui.py --output evidence-kde
 ```
 
 Tests require pytest/pytest-subtests and a private `dbus-daemon`; the integration suite starts an isolated loopback service. No test requires real mouse hardware. Historical QML baselines are retained solely for regression tests and are not installed.

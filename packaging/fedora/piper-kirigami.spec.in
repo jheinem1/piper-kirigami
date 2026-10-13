@@ -17,6 +17,8 @@ BuildRequires:  python3-dbus-next >= 0.2.3
 BuildRequires:  python3-pytest
 BuildRequires:  python3-pytest-subtests
 BuildRequires:  dbus-daemon
+BuildRequires:  xorg-x11-server-Xvfb
+BuildRequires:  xorg-x11-xauth
 BuildRequires:  qt6-qtdeclarative
 BuildRequires:  qt6-qtsvg
 BuildRequires:  kf6-kirigami
@@ -63,7 +65,7 @@ export SOURCE_DATE_EPOCH=@SOURCE_DATE_EPOCH@
 DESTDIR=%{buildroot} meson install -C _build --no-rebuild
 
 %check
-export QT_QPA_PLATFORM=offscreen
+export QT_QPA_PLATFORM=xcb
 export QT_QUICK_BACKEND=software
 export PYTHONDONTWRITEBYTECODE=1
 export XDG_RUNTIME_DIR="$(mktemp -d)"
@@ -72,8 +74,8 @@ trap 'rm -rf "$XDG_RUNTIME_DIR"' EXIT
 desktop-file-validate %{buildroot}%{_datadir}/applications/org.freedesktop.Piper.Kirigami.desktop
 # Test the active frontend, model, private D-Bus protocol, and all SVG artwork.
 # The native UI suite starts subprocesses, avoiding QApplication clashes.
-%{__python3} -m pytest -q tests/qt/test_backend.py tests/test_qt_diagrams.py tests/qt/test_kde_ui.py tests/qt/test_handbook.py tests/qt/test_desktop_style.py
-%{__python3} tools/verify-kde-settings.py --skip-captures --output "$XDG_RUNTIME_DIR/settings-qa"
+xvfb-run -a -s "-screen 0 1600x1100x24" %{__python3} -m pytest -q tests/qt/test_backend.py tests/test_qt_diagrams.py tests/qt/test_kde_ui.py tests/qt/test_handbook.py tests/qt/test_desktop_style.py
+xvfb-run -a -s "-screen 0 1600x1100x24" %{__python3} tools/verify-kde-settings.py --skip-captures --output "$XDG_RUNTIME_DIR/settings-qa"
 
 %files
 %license COPYING THIRD_PARTY_NOTICES.md

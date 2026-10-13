@@ -566,9 +566,9 @@ ApplicationWindow {
                     Kirigami.Heading { objectName: "sectionTitle"; text: root.assignmentEditing ? root.assignmentTitle : root.pageTitle; level: 2 }
                     Item { Layout.fillWidth: true; Layout.minimumWidth: 0 }
                     Label { text: "Device:" }
-                    ComboBox { id: deviceSelector; objectName: "deviceSelect"; flat: true; Accessible.name: "Device"; model: backend.devices; textRole: "name"; currentIndex: backend.selectedDeviceIndex; Layout.preferredWidth: modulePane.width<800 ? 210 : 270; onActivated: { let target=currentIndex; root.requestNavigation(function() { backend.selectDevice(target); root.clearSelection(); root.shifted=false; }); } }
+                    NativeComboBox { id: deviceSelector; objectName: "deviceSelect"; flat: true; Accessible.name: "Device"; model: backend.devices; textRole: "name"; currentIndex: backend.selectedDeviceIndex; Layout.preferredWidth: modulePane.width<800 ? 210 : 270; onActivated: { let target=currentIndex; root.requestNavigation(function() { backend.selectDevice(target); root.clearSelection(); root.shifted=false; }); } }
                     Label { text: "Profile:" }
-                    ComboBox { id: profileSelector; objectName: "profileSelect"; flat: true; Accessible.name: "Profile"; model: backend.profiles; textRole: "name"; currentIndex: backend.selectedProfileIndex; Layout.preferredWidth: modulePane.width<800 ? 110 : 140; onActivated: { let target=currentIndex; root.requestNavigation(function() { backend.selectProfile(target); root.clearSelection(); }); } }
+                    NativeComboBox { id: profileSelector; objectName: "profileSelect"; flat: true; Accessible.name: "Profile"; model: backend.profiles; textRole: "name"; currentIndex: backend.selectedProfileIndex; Layout.preferredWidth: modulePane.width<800 ? 110 : 140; onActivated: { let target=currentIndex; root.requestNavigation(function() { backend.selectProfile(target); root.clearSelection(); }); } }
                     }
                 }
             ColumnLayout {
@@ -900,7 +900,7 @@ ApplicationWindow {
                                             spacing: Kirigami.Units.largeSpacing
                                             Kirigami.FormLayout {
                                                 Layout.fillWidth: true
-                                                ComboBox {
+                                                NativeComboBox {
                                                     id: dpiX; objectName: "dpiX"+modelData.index
                                                     Kirigami.FormData.label: modelData.separateXY ? "X axis:" : "Sensitivity:"
                                                     Accessible.name: "Stage " + (modelData.index+1) + (modelData.separateXY ? " X axis DPI" : " DPI")
@@ -909,7 +909,7 @@ ApplicationWindow {
                                                     displayText: currentText + " DPI"
                                                     onActivated: backend.setDpi(modelData.index,Number(currentText),modelData.separateXY ? Number(dpiY.currentText) : Number(currentText))
                                                 }
-                                                ComboBox {
+                                                NativeComboBox {
                                                     id: dpiY; objectName: "dpiY"+modelData.index
                                                     Kirigami.FormData.label: "Y axis:"
                                                     Accessible.name: "Stage " + (modelData.index+1) + " Y axis DPI"
@@ -938,7 +938,7 @@ ApplicationWindow {
                                 }
                             }
                             Kirigami.FormLayout {
-                                ComboBox {
+                                NativeComboBox {
                                     objectName: "reportRate"
                                     Kirigami.FormData.label: "Polling rate:"
                                     Accessible.name: "Polling rate"
@@ -968,7 +968,7 @@ ApplicationWindow {
                                     }
                                     Label { visible: root.profile.angleSnapping === undefined || root.profile.angleSnapping === -1; text: "Not supported"; color: root.subtle }
                                 }
-                                ComboBox {
+                                NativeComboBox {
                                     objectName: "debounce"
                                     Kirigami.FormData.label: "Debounce time:"
                                     Accessible.name: "Debounce time"
@@ -978,7 +978,7 @@ ApplicationWindow {
                                     displayText: count ? currentText + " ms" : "Not supported"
                                     onActivated: backend.setDebounce(Number(currentText))
                                 }
-                                ComboBox {
+                                NativeComboBox {
                                     objectName: "advancedReportRate"
                                     Kirigami.FormData.label: "Polling rate:"
                                     Accessible.name: "Polling rate"

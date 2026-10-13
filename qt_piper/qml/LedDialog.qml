@@ -51,7 +51,7 @@ Dialog {
     contentItem: ColumnLayout {
         spacing: Kirigami.Units.largeSpacing*2
         Kirigami.FormLayout {
-            ComboBox {
+            NativeComboBox {
                 id: mode; objectName: "ledMode"
                 Kirigami.FormData.label: "Effect:"
                 Accessible.name: "Lighting effect"
