@@ -1,0 +1,19 @@
+{
+  "name": "dbus-test-daemon",
+  "buildsystem": "simple",
+  "build-commands": [
+    "meson setup _build --prefix=/app/test-tools --default-library=static -Dauto_features=disabled -Dmessage_bus=true -Dtools=false -Duser_session=false -Dtraditional_activation=false",
+    "ninja -C _build bus/dbus-daemon",
+    "install -Dm755 _build/bus/dbus-daemon /app/test-tools/bin/dbus-daemon"
+  ],
+  "sources": [
+    {
+      "type": "archive",
+      "url": "https://dbus.freedesktop.org/releases/dbus/dbus-1.16.2.tar.xz",
+      "sha256": "0ba2a1a4b16afe7bceb2c07e9ce99a8c2c3508e5dec290dbb643384bd6beb7e2"
+    }
+  ],
+  "cleanup": [
+    "*"
+  ]
+}

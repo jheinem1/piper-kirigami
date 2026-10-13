@@ -1074,6 +1074,10 @@ ApplicationWindow {
                     Item { Layout.fillWidth: true }
                     Label {
                         objectName: "pendingChangesStatus"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        Layout.maximumWidth: implicitWidth
+                        elide: Text.ElideRight
                         visible: root.assignmentEditing ? assignmentPage.edited || assignmentPage.applying : root.page===1 ? backend.profileMappingsDirty || backend.busy : root.settingsPageDirty || backend.busy
                         text: backend.busy ? "Applying changes…" : root.page===1 ? "Unsaved assignment changes" : "Unsaved changes"
                         color: root.foreground

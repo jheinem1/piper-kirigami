@@ -161,6 +161,17 @@ class FlatpakTests(unittest.TestCase):
                 self.assertIn("--target=/app/test-tools", command)
                 self.assertEqual(module["cleanup"], ["*"])
 
+    def test_private_dbus_daemon_is_build_only(self):
+        module = json.loads((self.directory / "dbus-test-daemon.json").read_text())
+        self.assertIn("dbus-test-daemon.json", self.manifest["modules"])
+        self.assertEqual(module["cleanup"], ["*"])
+        source, = module["sources"]
+        self.assertEqual(source["url"], "https://dbus.freedesktop.org/releases/dbus/dbus-1.16.2.tar.xz")
+        self.assertRegex(source["sha256"], r"^[0-9a-f]{64}$")
+        self.assertIn("/app/test-tools/bin/dbus-daemon", module["build-commands"][-1])
+        commands = "\n".join(self.manifest["modules"][-1]["build-commands"])
+        self.assertIn("PATH=/app/test-tools/bin:$PATH", commands)
+
     def test_active_tests_and_installed_launch_are_required(self):
         commands = "\n".join(self.manifest["modules"][-1]["build-commands"])
         for test in (

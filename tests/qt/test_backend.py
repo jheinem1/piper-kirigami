@@ -2,6 +2,7 @@
 """Hardware-free model, fixture and real private-D-Bus protocol tests."""
 
 import asyncio
+import os
 from copy import deepcopy
 import shutil
 import subprocess
@@ -271,11 +272,18 @@ def test_fixture_reads_are_deterministic():
 def private_bus(tmp_path):
     if not shutil.which("dbus-daemon"):
         pytest.skip("dbus-daemon unavailable")
-    # Loopback TCP works in sandboxes where AF_UNIX is unavailable. This isolated
-    # daemon carries only synthetic test data and exits at fixture teardown.
+    # Cloud sandboxes can require TCP; offline Flatpak builders require a Unix
+    # socket. Both carry the same synthetic protocol tests on a private daemon.
+    transport = os.environ.get("PIPER_TEST_BUS_TRANSPORT", "tcp")
+    assert transport in ("tcp", "unix")
+    listen = (
+        "unix:tmpdir=/tmp"
+        if transport == "unix"
+        else "tcp:host=127.0.0.1,port=0,family=ipv4"
+    )
     config = tmp_path / "bus.conf"
-    config.write_text("""<busconfig><type>session</type>
-      <listen>tcp:host=127.0.0.1,port=0,family=ipv4</listen>
+    config.write_text(f"""<busconfig><type>session</type>
+      <listen>{listen}</listen>
       <auth>ANONYMOUS</auth><allow_anonymous/>
       <policy context="default"><allow send_destination="*"/>
       <allow receive_sender="*"/><allow own="*"/></policy></busconfig>""")
