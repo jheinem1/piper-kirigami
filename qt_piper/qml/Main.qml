@@ -207,6 +207,7 @@ ApplicationWindow {
     property int selectedButton: -1
     property int selectedLed: -1
     property string hoverTarget: ""
+    property bool keyboardTargetActive: false
     property var device: backend.selectedDevice
     property var profile: backend.selectedProfile
     property var buttons: profile.buttons || []
@@ -219,6 +220,9 @@ ApplicationWindow {
     property var bounds: diagram.deviceBounds || ({x:0,y:0,width:diagram.width,height:diagram.height})
     property string selectedTarget: page === 2 ? (selectedLed < 0 ? "" : "led"+selectedLed) : (selectedButton < 0 ? "" : "button"+(shifted ? selectedButton-21 : selectedButton))
     property bool hasSelection: page===2 ? selectedLed>=0 : selectedButton>=0
+    // Pointer feedback ends at a miss. A remembered row selection is not a hover.
+    readonly property string diagramHighlight: hoverTarget || (diagramArea.activeFocus && keyboardTargetActive ? selectedTarget : "")
+    readonly property string selectedTargetDescription: !hasSelection ? "No target selected." : page===2 ? "Lighting zone "+(selectedLed+1) : "Button "+(buttonAt(selectedButton).physicalIndex+1)+", "+(buttonAt(selectedButton).actionLabel||"No assignment")
     property bool discardOnClose: false
     function buttonAt(index) { for(let b of buttons) if(b.index===index) return b; return {} }
     function ledAt(index) { for(let l of leds) if(l.index===index) return l; return {} }
@@ -268,13 +272,14 @@ ApplicationWindow {
         }
     }
     function selectDiagramTarget(index) {
+        keyboardTargetActive=false;
         if (page===2) { chooseTarget(index); return; }
         if (buttonAt(index).index===undefined) return;
         selectedButton=index;
         root.scheduleAssignmentReveal(index);
     }
-    function nextTarget(direction) { let list=diagram.hotspots||[]; if(!list.length)return; let idx=list.findIndex(function(h){return h.index===(page===2?selectedLed:selectedButton)}); idx=(idx+direction+list.length)%list.length; if(page===2)selectedLed=list[idx].index;else { selectedButton=list[idx].index; root.scheduleAssignmentReveal(root.selectedButton); } }
-    function clearSelection() { selectedButton=-1; selectedLed=-1 }
+    function nextTarget(direction) { let list=diagram.hotspots||[]; if(!list.length)return; hoverTarget=""; keyboardTargetActive=true; let idx=list.findIndex(function(h){return h.index===(page===2?selectedLed:selectedButton)}); idx=idx<0 ? (direction>0 ? 0 : list.length-1) : (idx+direction+list.length)%list.length; if(page===2)selectedLed=list[idx].index;else { selectedButton=list[idx].index; root.scheduleAssignmentReveal(root.selectedButton); } }
+    function clearSelection() { selectedButton=-1; selectedLed=-1; hoverTarget=""; keyboardTargetActive=false }
     function revealSettingsFocus(scroll) {
         let item = root.activeFocusItem;
         if (!item || !scroll.visible) return;
@@ -531,7 +536,6 @@ ApplicationWindow {
         Item {
             objectName: "paneDivider"
             Layout.fillHeight: true; Layout.preferredWidth: 1
-            Kirigami.Separator { width: parent.width; y: Kirigami.Units.largeSpacing; height: root.paneHeaderHeight-Kirigami.Units.largeSpacing*2 }
             Kirigami.Separator { width: parent.width; y: root.paneHeaderHeight; height: parent.height-y }
         }
         Item {
@@ -657,6 +661,8 @@ ApplicationWindow {
                                 id: diagramArea; objectName: "diagramArea"; Layout.fillWidth: true; Layout.fillHeight: true; clip: true; activeFocusOnTab: true
                                 Accessible.role: Accessible.Button
                                 Accessible.name: root.page===2 ? "Mouse diagram. Arrow keys select a lighting zone; Enter edits it." : "Mouse diagram. Arrow keys select a button; Enter edits it."
+                                Accessible.description: root.selectedTargetDescription
+                                onActiveFocusChanged: if (!activeFocus) root.keyboardTargetActive=false
                                 Keys.onRightPressed: root.nextTarget(1)
                                 Keys.onLeftPressed: root.nextTarget(-1)
                                 Keys.onDownPressed: root.nextTarget(1)
@@ -669,53 +675,15 @@ ApplicationWindow {
                                     width: root.diagram.width*diagramArea.scaleFactor; height: root.diagram.height*diagramArea.scaleFactor
                                     x: (diagramArea.width-root.bounds.width*diagramArea.scaleFactor)/2-root.bounds.x*diagramArea.scaleFactor
                                     y: (diagramArea.height-root.bounds.height*diagramArea.scaleFactor)/2-root.bounds.y*diagramArea.scaleFactor
-                                    source: root.diagram.source ? root.diagram.source+"&leaders=0&highlight="+(root.hoverTarget||root.selectedTarget) : ""
+                                    source: root.diagram.source ? root.diagram.source+"&leaders=0&highlight="+root.diagramHighlight : ""
                                     sourceSize.width: Math.ceil(width*2); sourceSize.height: Math.ceil(height*2); fillMode: Image.Stretch; smooth: true; cache: false
                                     MouseArea {
                                         anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.ArrowCursor
-                                        onPositionChanged: function(mouse) { let h=diagrams.hitTarget(device.svg||"",root.page===2?"leds":"buttons",mouse.x/diagramArea.scaleFactor,mouse.y/diagramArea.scaleFactor,root.diagramCount,root.shifted); root.hoverTarget=h.id||"" }
-                                        onExited: root.hoverTarget=""
+                                        onPositionChanged: function(mouse) { root.keyboardTargetActive=false; let h=diagrams.hitTarget(device.svg||"",root.page===2?"leds":"buttons",mouse.x/diagramArea.scaleFactor,mouse.y/diagramArea.scaleFactor,root.diagramCount,root.shifted); root.hoverTarget=h.id||"" }
+                                        onExited: { root.hoverTarget=""; root.keyboardTargetActive=false }
                                         onClicked: function(mouse) { let h=diagrams.hitTarget(device.svg||"",root.page===2?"leds":"buttons",mouse.x/diagramArea.scaleFactor,mouse.y/diagramArea.scaleFactor,root.diagramCount,root.shifted); if(h.index!==undefined && h.index>=0)root.selectDiagramTarget(h.index) }
                                     }
-                                    Repeater {
-                                        model: root.diagram.hotspots||[]
-                                        delegate: Button {
-                                            required property var modelData
-                                            objectName: "diagramTarget"+modelData.index
-                                            visible: root.page===2 || !device.hasGShift || modelData.physicalIndex<8
-                                            readonly property bool compactBadges: root.page===1 && device.hasGShift===true && diagramArea.width<Kirigami.Units.gridUnit*28
-                                            readonly property var wheelTarget: (root.diagram.hotspots||[]).find(function(target) { return target.physicalIndex===2; }) || modelData
-                                            readonly property var dpiDownTarget: (root.diagram.hotspots||[]).find(function(target) { return target.physicalIndex===6; }) || modelData
-                                            x: {
-                                                let center=modelData.centerX*diagramArea.scaleFactor;
-                                                if (compactBadges) {
-                                                    let wheel=wheelTarget.centerX*diagramArea.scaleFactor;
-                                                    if (modelData.physicalIndex===3) center=wheel-width-Kirigami.Units.smallSpacing;
-                                                    else if (modelData.physicalIndex===4) center=wheel+width+Kirigami.Units.smallSpacing;
-                                                    else if (modelData.physicalIndex===0) center=Math.min(center,wheel-width-Kirigami.Units.smallSpacing);
-                                                    else if (modelData.physicalIndex===1) center=Math.max(center,wheel+width+Kirigami.Units.smallSpacing);
-                                                } else if (device.hasGShift && modelData.physicalIndex===3) center-=8;
-                                                else if (device.hasGShift && modelData.physicalIndex===4) center+=8;
-                                                return center-width/2;
-                                            }
-                                            y: {
-                                                let center=modelData.centerY*diagramArea.scaleFactor;
-                                                // Keep the detached wheel badges outside the artwork so they
-                                                // cannot intercept another physical SVG button's hit mask.
-                                                if (compactBadges && modelData.physicalIndex>=2 && modelData.physicalIndex<=4) return root.bounds.y*diagramArea.scaleFactor-height-Kirigami.Units.smallSpacing;
-                                                if (compactBadges && modelData.physicalIndex===7) center=Math.min(center,dpiDownTarget.centerY*diagramArea.scaleFactor-height-Kirigami.Units.smallSpacing);
-                                                return center-height/2;
-                                            }
-                                            width: Kirigami.Units.gridUnit*1.5; height: width
-                                            text: root.page===2 ? "L"+(modelData.index+1) : String(modelData.physicalIndex+1)
-                                            Accessible.name: root.page===2 ? "Lighting zone "+(modelData.index+1) : "Button "+(modelData.physicalIndex+1)+", "+(root.buttonAt(modelData.index).actionLabel||"No assignment")
-                                            Accessible.description: root.page===2 ? "Edit lighting zone" : "Select and reveal this button's assignment."
-                                            checkable: true; checked: root.selectedTarget===modelData.id
-                                            onClicked: root.selectDiagramTarget(modelData.index)
-                                            onHoveredChanged: root.hoverTarget=hovered?modelData.id:""
-                                            ToolTip.visible: hovered; ToolTip.text: root.page===2 ? "Edit lighting zone" : root.buttonAt(modelData.index).actionLabel||"Edit assignment"
-                                        }
-                                    }
+
                                 }
                             }
                             Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter; text: root.page===2 ? "Select a lighting zone on the mouse or in the list to edit." : "Select a button on the mouse to find its assignment."; color: root.subtle }
@@ -770,7 +738,7 @@ ApplicationWindow {
                                                 Keys.onReturnPressed: root.chooseTarget(modelData.index)
                                                 Keys.onEnterPressed: root.chooseTarget(modelData.index)
                                                 onActiveFocusChanged: if(activeFocus) root.revealAssignment(modelData.index)
-                                                onHoveredChanged: root.hoverTarget=hovered ? (root.page===2 ? "led"+modelData.index : "button"+modelData.physicalIndex) : ""
+                                                onHoveredChanged: { if(hovered) root.keyboardTargetActive=false; root.hoverTarget=hovered ? (root.page===2 ? "led"+modelData.index : "button"+modelData.physicalIndex) : "" }
                                                 contentItem: ColumnLayout {
                                                     spacing: Kirigami.Units.smallSpacing
                                                 RowLayout {

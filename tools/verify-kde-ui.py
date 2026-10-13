@@ -1205,57 +1205,169 @@ def scenario_narrow_targets(h):
     h.window.resize(960, 700)
     h.settle(200)
     checked = []
+    before = h.view_snapshot()
     for shifted in [False, True]:
         h.set_layer(shifted)
-        indices = list(range(21, 29) if shifted else range(8))
-        rectangles = []
+        indices = list(range(21, 41) if shifted else range(20))
+        assert not any(
+            item.objectName().startswith("diagramTarget")
+            for item in h.window.findChildren(original_ui.QObject)
+        ), "Diagram artwork must not have numbered button overlays"
         for index in indices:
-            badge = h.find("diagramTarget" + str(index))
-            assert h.fully_visible(badge), f"Narrow diagram badge {index} is clipped"
-            origin = badge.mapToScene(QPointF(0, 0))
-            rect = (
-                origin.x(),
-                origin.y(),
-                origin.x() + badge.width(),
-                origin.y() + badge.height(),
-            )
-            for other_index, other in rectangles:
-                overlap_x = min(rect[2], other[2]) - max(rect[0], other[0])
-                overlap_y = min(rect[3], other[3]) - max(rect[1], other[1])
-                assert (
-                    overlap_x <= 0.5 or overlap_y <= 0.5
-                ), f"Narrow badges {index} and {other_index} overlap by {overlap_x}×{overlap_y}"
-            rectangles.append((index, rect))
-            # A numbered badge may sit outside artwork, or over its own SVG
-            # region, but must not cover a different physical target's center.
-            diagram = h.find("mouseDiagram")
-            svg = h.backend.selectedDevice["svg"]
-            scale = diagram.width() / h.catalog.document(svg).width
-            center = diagram.mapFromScene(
-                badge.mapToScene(QPointF(badge.width() / 2, badge.height() / 2))
-            )
-            underlying = h.catalog.hitTest(
-                svg,
-                "buttons",
-                center.x() / scale,
-                center.y() / scale,
-                len(h.backend.selectedProfile["buttons"]),
-                shifted,
-            )
-            assert underlying in [
-                -1,
-                index,
-            ], f"Badge {index} covers different SVG target {underlying}"
-        for index in indices:
+            h.select_target(index)
+            checked.append(index)
+        for index in [indices[0], indices[-1]]:
             h.edit_target(index)
             h.back(discard=True)
-            h.click("diagramTarget" + str(index))
+        h.focus_with_tab("diagramArea")
+        for index in indices:
+            h.key(Qt.Key.Key_Right)
             h.assert_selected(index)
-            h.edit_row(index)
-            h.back(discard=True)
-            checked.append(index)
-    assert not h.backend.dirty
-    return {"narrow_svg_and_badge_targets": checked, "badge_overlap": False}
+            assert h.window.property("diagramHighlight") == "button" + str(
+                h.button(index)["physicalIndex"]
+            )
+        h.key(Qt.Key.Key_Return)
+        assert h.find("assignmentPage").property("buttonIndex") == indices[-1]
+        h.back(discard=True)
+    h.assert_view_unchanged(before)
+    return {
+        "narrow_svg_targets": checked,
+        "keyboard_targets": checked,
+        "numbered_overlays": False,
+    }
+
+
+def scenario_hover_feedback(h):
+    from PySide6.QtCore import QPoint
+    from PySide6.QtQuick import QQuickWindow
+
+    h.select_device("G600")
+    before = h.view_snapshot()
+    checked = []
+    for dark in [False, True]:
+        h.desktop_style.setDark(dark)
+        h.window.resize(1200, 820)
+        h.settle(150)
+        for shifted in [False, True]:
+            h.set_layer(shifted)
+            first, last = (21, 40) if shifted else (0, 19)
+            for index in [first, last]:
+                h.select_target(index)
+                target_id = "button" + str(h.button(index)["physicalIndex"])
+                assert h.window.property("hoverTarget") == target_id
+                assert h.window.property("diagramHighlight") == target_id
+                area = h.find("diagramArea")
+                diagram = h.find("mouseDiagram")
+                doc = h.catalog.document(h.backend.selectedDevice["svg"])
+                scale = diagram.width() / doc.width
+                # A blank point inside the SVG's bounding box exercises hit-test
+                # misses, independently of MouseArea exit events.
+                blank = None
+                for y in range(10, int(area.height()) - 10, 10):
+                    for x in range(10, int(area.width()) - 10, 10):
+                        scene = area.mapToScene(QPointF(x, y)).toPoint()
+                        local = diagram.mapFromScene(QPointF(scene))
+                        if not (
+                            0 < local.x() < diagram.width()
+                            and 0 < local.y() < diagram.height()
+                        ):
+                            continue
+                        if (
+                            h.catalog.hitTest(
+                                h.backend.selectedDevice["svg"],
+                                "buttons",
+                                local.x() / scale,
+                                local.y() / scale,
+                                len(h.backend.selectedProfile["buttons"]),
+                                shifted,
+                            )
+                            == -1
+                        ):
+                            blank = scene
+                            break
+                    if blank is not None:
+                        break
+                assert blank is not None
+                for point in [blank, QPoint(1100, 40)]:
+                    QTest.mouseMove(h.window, h.target_point("buttons", index))
+                    h.settle(40)
+                    QTest.mouseMove(h.window, point)
+                    h.settle(80)
+                    assert h.window.property("hoverTarget") == ""
+                    assert h.window.property("diagramHighlight") == ""
+                    assert h.window.property("selectedButton") == index
+                    assert h.find("buttonAssignment" + str(index)).property(
+                        "highlighted"
+                    )
+                    QTest.mouseClick(
+                        h.window,
+                        Qt.MouseButton.LeftButton,
+                        Qt.KeyboardModifier.NoModifier,
+                        blank,
+                    )
+                    h.settle(80)
+                    assert h.window.property("selectedButton") == index
+                    assert h.window.property("diagramHighlight") == ""
+                checked.append({"dark": dark, "shifted": shifted, "index": index})
+            # Tab does not invent a target. Arrow keys deliberately select one.
+            h.set_layer(not shifted)
+            h.set_layer(shifted)
+            h.focus_with_tab("diagramArea")
+            assert h.window.property("selectedButton") == -1
+            assert h.window.property("diagramHighlight") == ""
+            h.key(Qt.Key.Key_Left)
+            h.assert_selected(last)
+            assert h.window.property("diagramHighlight") == "button19"
+            interface = QAccessible.queryAccessibleInterface(h.find("diagramArea"))
+            assert interface.text(QAccessible.Text.Description) == h.window.property(
+                "selectedTargetDescription"
+            )
+            row = h.find("buttonAssignment" + str(first))
+            row_point = row.mapToScene(
+                QPointF(row.width() / 2, row.height() / 2)
+            ).toPoint()
+            QTest.mouseMove(h.window, row_point)
+            h.settle(80)
+            assert h.window.property("diagramHighlight") == "button0"
+            QTest.mouseMove(h.window, QPoint(1100, 40))
+            h.settle(80)
+            assert h.window.property("diagramHighlight") == ""
+            assert h.window.property("selectedButton") == last
+            h.key(Qt.Key.Key_Left)
+            assert h.window.property("diagramHighlight") == "button18"
+            h.key(Qt.Key.Key_Tab)
+            assert not h.find("diagramArea").hasActiveFocus()
+            assert h.window.property("diagramHighlight") == ""
+            h.capture(
+                "hover-none-"
+                + ("dark" if dark else "light")
+                + ("-gshift" if shifted else "-normal")
+            )
+        h.window.requestActivate()
+        h.settle(150)
+        assert h.window.isActive()
+        h.capture(("dark" if dark else "light") + "-active-clean-header")
+        other = QQuickWindow()
+        try:
+            other.resize(100, 100)
+            other.show()
+            other.requestActivate()
+            h.settle(200)
+            assert not h.window.isActive()
+            h.capture(("dark" if dark else "light") + "-inactive-clean-header")
+        finally:
+            other.close()
+        h.window.requestActivate()
+        h.settle(100)
+    h.assert_view_unchanged(before)
+    h.interactions.append(
+        {"action": "verify_native_hover_and_window_activation", "cases": checked}
+    )
+    return {
+        "hover_miss_and_exit_cases": checked,
+        "keyboard_none_and_reverse_selection": True,
+        "view_only": True,
+    }
 
 
 def scenario_minimum_size(h):
@@ -1965,7 +2077,7 @@ def scenario_hig_accessibility(h):
         for index in range(21, 29) if shifted else range(8):
             button = h.button(index)
             accessible(
-                "diagramTarget" + str(index),
+                "buttonAssignment" + str(index),
                 f"Button {button['physicalIndex'] + 1}, {button['actionLabel']}",
             )
     h.click("sensitivityTab")
@@ -2686,6 +2798,7 @@ SCENARIOS = {
     "all_targets": scenario_all_targets,
     "selection_reveal": scenario_selection_reveal,
     "narrow_targets": scenario_narrow_targets,
+    "hover_feedback": scenario_hover_feedback,
     "minimum_size": scenario_minimum_size,
     "search": scenario_search,
     "footer": scenario_footer,

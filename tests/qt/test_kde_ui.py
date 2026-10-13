@@ -21,6 +21,7 @@ SCENARIOS = [
     "all_targets",
     "selection_reveal",
     "narrow_targets",
+    "hover_feedback",
     "minimum_size",
     "search",
     "footer",

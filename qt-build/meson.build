@@ -1,4 +1,4 @@
-project('piper-kirigami', version: '0.1.0', license: 'GPL-2.0-or-later', meson_version: '>=0.61')
+project('piper-kirigami', version: '0.1.1', license: 'GPL-2.0-or-later', meson_version: '>=0.61')
 python = import('python').find_installation('python3')
 pkgdir = get_option('prefix') / get_option('datadir') / 'piper-kirigami'
 install_subdir('../qt_piper', install_dir: pkgdir, exclude_directories: ['__pycache__', '.ruff_cache', '.pytest_cache'], exclude_files: ['ruff.toml'])
