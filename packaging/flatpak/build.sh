@@ -7,7 +7,9 @@ OUT=${1:?Usage: packaging/flatpak/build.sh OUTPUT_DIRECTORY [GIT_REF]}
 REF=${2:-HEAD}
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
-WORK=$(mktemp -d)
+# The sandboxed Builder can access host-mounted output paths, but its /tmp is
+# private. Keep the source, build tree and repository beside the artifacts.
+WORK=$(mktemp -d "$OUT/.build.XXXXXXXX")
 trap 'rm -rf "$WORK"' EXIT
 APP_ID=io.github.jheinem1.PiperKirigami
 BRANCH=development
