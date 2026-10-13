@@ -27,10 +27,18 @@ jobs:
       - name: Install build tools and matching Flathub dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder dbus-x11 xvfb xauth
+          sudo apt-get install -y flatpak dbus-x11 xvfb xauth
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak install --user --noninteractive -y flathub \
-            org.kde.Platform/x86_64/6.11 org.kde.Sdk/x86_64/6.11 io.qt.PySide.BaseApp/x86_64/6.11
+            org.kde.Platform/x86_64/6.11 org.kde.Sdk/x86_64/6.11 io.qt.PySide.BaseApp/x86_64/6.11 \
+            org.flatpak.Builder
+          # The runner's builder 1.2 still invokes appstream-compose, which the
+          # current KDE SDK replaced with appstreamcli. Use the maintained builder.
+          mkdir -p "$RUNNER_TEMP/piper-build-tools"
+          printf '%s\n' '#!/usr/bin/env bash' 'exec flatpak run org.flatpak.Builder "$@"' \
+            > "$RUNNER_TEMP/piper-build-tools/flatpak-builder"
+          chmod +x "$RUNNER_TEMP/piper-build-tools/flatpak-builder"
+          echo "$RUNNER_TEMP/piper-build-tools" >> "$GITHUB_PATH"
       - name: Build, test model and QML, and export development bundle
         run: xvfb-run -a -s "-screen 0 1600x1100x24" dbus-run-session -- bash packaging/flatpak/build.sh "$RUNNER_TEMP/flatpak-artifacts"
       - name: Install bundle and verify its runtime in this disposable runner
