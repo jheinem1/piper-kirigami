@@ -46,6 +46,7 @@
         "install -Dm644 THIRD_PARTY_NOTICES.md /app/share/licenses/piper-kirigami/THIRD_PARTY_NOTICES.md",
         "QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software python3 packaging/flatpak/check-runtime.py",
         "/app/test-tools/bin/dbus-daemon --version",
+        "QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software python3 -c 'from PySide6.QtGui import QGuiApplication; app = QGuiApplication([]); print(\"Native Qt display:\", app.platformName(), flush=True); assert app.platformName() == \"xcb\"'",
         "PIPER_TEST_BUS_TRANSPORT=unix PATH=/app/test-tools/bin:$PATH PYTHONPATH=/app/test-tools:. QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software python3 -m pytest -q tests/qt/test_backend.py tests/test_qt_diagrams.py tests/qt/test_kde_ui.py tests/qt/test_handbook.py tests/qt/test_desktop_style.py",
         "PYTHONPATH=/app/test-tools:. QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software python3 tools/verify-kde-settings.py --skip-captures --output /tmp/piper-settings-qa",
         "piper-kirigami --mock --headless --screenshot /tmp/piper-build-smoke.png && test -s /tmp/piper-build-smoke.png"
