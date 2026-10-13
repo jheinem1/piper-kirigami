@@ -1,0 +1,2030 @@
+{
+  "backend": "Deterministic mock fixtures; no hardware accessed",
+  "renderer": "QApplication; org.kde.desktop; native Breeze; QQuickWindow.grabWindow",
+  "source_sha256": {
+    "qt_piper/qml/Main.qml": "b5301a14262dabaa16049ea72800bbbb1e99739147aeaff5f4bd02b833b38160",
+    "qt_piper/qml/LedDialog.qml": "3fb56e4651c1a5e8203aff21de24c33b1705aa5c49d7a8863a342dbc61e1e08f"
+  },
+  "checks": [
+    {
+      "name": "capture_pages",
+      "passed": true
+    },
+    {
+      "name": "sensitivity",
+      "passed": true
+    },
+    {
+      "name": "advanced",
+      "passed": true
+    },
+    {
+      "name": "profiles",
+      "passed": true
+    },
+    {
+      "name": "lighting",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "screenshots": [
+    {
+      "file": "evidence-kde/final-current-settings/light-g600-sensitivity.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "070226f67527194e8a1ab34545d63b3ab8c35568e814abb849a15f28b42b993b"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-g600-profiles.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "69b90818cb17f5d83c38c6a03679746fc8b5b7b3a3ea3a420b4b1e893c32a661"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-g600-advanced.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "efd22fd201c89aef24a8e4fb6a046232dbe323aecc2c687b4e16cf36b87a5a63"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-g600-lighting.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "b20869cd41b02ddb092a53d77d8b434c29bfdb8c92ab56a3e7e3e1103eb2070a"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-g600-lighting-editor.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "767550748bb2a1c8dd7ff6603ed9e6d240196f48adf0d10905505bc710ea9ac2"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-capability-sensitivity.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "65a720ca9be635c377c1d8bcad9dcfa8203569631d272b796e808a6712ace461"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-capability-profiles.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "248e5e544abbaba7b1ae68e862be1e7238a1de9fc52bfa36a56e42a992508788"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-capability-advanced.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "dbe557a9b18b5e32ba7f27be9ebcd4ae7cee0b12e3c037c2ff5b3caad6df20ea"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-capability-lighting.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "2baf728b8249923fabc4cd294e32068964548e5cd32ab5bc6be127e04d3cfb1e"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-capability-lighting-editor.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "d424f407dbe78f100491389b0cced0f8172821edab061edf87c64ac864a3a86f"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-g600-sensitivity.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "8b11ffd8f3c37c21a8580678d6cedc69cd84f5c5464e6c3bd3e36abeb72a4384"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-g600-profiles.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "10f68b704fdefad0cf7753a2aa79bc03fa3ae26008a8acc69b0d5657bb3c98fb"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-g600-advanced.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "79a0b8ac4ec3d8b55fb9ad1e5dd6fe0eded7d7ae99453a5efdef91cf41830fd9"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-g600-lighting.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "0c9033847fd096272df0a4f1d11b24e6a4123e6f1cb58fb73706b1ee3d15798d"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-g600-lighting-editor.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "3988ecf2cf0b21403ec2dac4d9335b6d57b03d56b5911058b630a5c3cf509cec"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-capability-sensitivity.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "b15117665b3a7e4bde70abfe57fc06c0d42b6255dae33b0f6109aaf3b9ee1c66"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-capability-profiles.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "596fbbf65dca422393a332d4df53ac94e1a929e6cac1e9759e10f6c6e6aff2c6"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-capability-advanced.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "b3233ec1b11ef2b98a74c631ea64dbc687b46e4ec65aaffad29211f02f6ccb65"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-capability-lighting.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "b95384042ecade683c7c85b005100dcdec176178bf0a5f538dca0e7a171a8709"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-capability-lighting-editor.png",
+      "width": 1280,
+      "height": 820,
+      "sha256": "4ad26e7ae0499b0be31909034f7aaba07266f688b2010976f5761033f375068e"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-g600-sensitivity.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "ba509282e5d215368946832c0cc1549b8359fc96c9a0e63263df9a805451a302"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-g600-profiles.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "8d6851ded729bf2b0d70feac135825b4c5f167002aeb03408505f541c84233ec"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-g600-advanced.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "2cc1f8ca54bda5f739d13d50030dedbea5f66caeccb1631a51a8d9674e790033"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-g600-lighting.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "c2c95212316375e222ff616d11e630b2a33664571e665fee3f2462e402919c44"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-g600-lighting-editor.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "89f1bfc0408bd174c8eb07f82a63174d376170832ea8f50e98382e09fbabb2a0"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-capability-sensitivity.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "24de9bab33649d26f62680e47f954f66b479b41c227c10b622724b76d4b0e5b8"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-capability-profiles.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "f887fafa0713063a8ad7b8a5f87ad9ac295210b974b321dcdb97d149dc9ff9eb"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-capability-advanced.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "d378c5d5ae654911f5bf30a9a887a017fc0f5d295e70328b074bf8e22eb60fa9"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-capability-lighting.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "6bb3153529c2dfc75631447564f9accc6da0615c7a22bc27210a7d19efe74245"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/light-narrow-capability-lighting-editor.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "577bd10f29c03b7f8fc970800131536bfb120e57a135bc74d228a90e2c111e20"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-g600-sensitivity.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "18e0825fec50cb5e04d6afa6454da9a9f54bb85bf032dc216a40fd843ea3cab4"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-g600-profiles.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "464edc915f27ffcb286aa7643dc65e098f1d0a938a9f9a5863c4a03d4ddd8b29"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-g600-advanced.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "510c7d656f05eb26a40a11d75889390f6916060582fb939294c21280421ab41f"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-g600-lighting.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "ed0b1af92660ecacfcf5aabf0ece9ec97cc8e34e1fee528568bd5d0207a20f36"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-g600-lighting-editor.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "f4faff4d1b29304cacf96050189c3ae44723e6ce277f56a5c8141c6a2eabfb83"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-capability-sensitivity.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "ef2419c48e8834917c261295887fbcb7a8e95a5045652bbdf3a7cf09a89bfd07"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-capability-profiles.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "c2d43679a221ab27704a437739d953845cb92d5667e38c7a4d1f1f8535cd1f9d"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-capability-advanced.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "a3c4f3d38e87451bb2d7e4591c00e84abe4c42a08ccc712ef4e114aac2b857cb"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-capability-lighting.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "e6fe3c1d085fe9cd6b649391f556e3fb43819d45fcd48503ba1160f285dfcacd"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/dark-narrow-capability-lighting-editor.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "41626b5b9d9b511804dc0a55c17ebaf1663a4a56ecec83c2d20de2a12eb4e5dd"
+    },
+    {
+      "file": "evidence-kde/final-current-settings/narrow-sensitivity-pending.png",
+      "width": 960,
+      "height": 700,
+      "sha256": "ec516edbf766d27a4957d14c43504925b9d14bf316fc0702b9f106959a7bf16d"
+    }
+  ],
+  "interactions": [
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 935.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 0,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "sensitivityTab",
+      "x": 135.0,
+      "y": 97.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileTab",
+      "x": 135.0,
+      "y": 165.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedTab",
+      "x": 135.0,
+      "y": 199.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "lightingTab",
+      "x": 135.0,
+      "y": 131.0
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 387,
+      "y": 334
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 737.0,
+      "y": 519.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 935.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "sensitivityTab",
+      "x": 135.0,
+      "y": 97.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileTab",
+      "x": 135.0,
+      "y": 165.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedTab",
+      "x": 135.0,
+      "y": 199.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "lightingTab",
+      "x": 135.0,
+      "y": 131.0
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 391,
+      "y": 411
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 737.0,
+      "y": 519.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "appMenuButton",
+      "x": 249.0,
+      "y": 21.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "themeToggle",
+      "x": 364.0,
+      "y": 24.5
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 935.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 0,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "sensitivityTab",
+      "x": 135.0,
+      "y": 97.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileTab",
+      "x": 135.0,
+      "y": 165.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedTab",
+      "x": 135.0,
+      "y": 199.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "lightingTab",
+      "x": 135.0,
+      "y": 131.0
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 387,
+      "y": 334
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 737.0,
+      "y": 519.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 935.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "sensitivityTab",
+      "x": 135.0,
+      "y": 97.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileTab",
+      "x": 135.0,
+      "y": 165.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedTab",
+      "x": 135.0,
+      "y": 199.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "lightingTab",
+      "x": 135.0,
+      "y": 131.0
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 391,
+      "y": 411
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 737.0,
+      "y": 519.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "appMenuButton",
+      "x": 249.0,
+      "y": 21.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "themeToggle",
+      "x": 364.0,
+      "y": 24.5
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 0,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "sensitivityTab",
+      "x": 135.0,
+      "y": 97.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileTab",
+      "x": 135.0,
+      "y": 165.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedTab",
+      "x": 135.0,
+      "y": 199.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "lightingTab",
+      "x": 135.0,
+      "y": 131.0
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 308,
+      "y": 315
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 577.0,
+      "y": 459.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "sensitivityTab",
+      "x": 135.0,
+      "y": 97.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileTab",
+      "x": 135.0,
+      "y": 165.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedTab",
+      "x": 135.0,
+      "y": 199.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "lightingTab",
+      "x": 135.0,
+      "y": 131.0
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 313,
+      "y": 348
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 577.0,
+      "y": 459.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "appMenuButton",
+      "x": 249.0,
+      "y": 21.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "themeToggle",
+      "x": 364.0,
+      "y": 24.5
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 0,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "sensitivityTab",
+      "x": 135.0,
+      "y": 97.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileTab",
+      "x": 135.0,
+      "y": 165.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedTab",
+      "x": 135.0,
+      "y": 199.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "lightingTab",
+      "x": 135.0,
+      "y": 131.0
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 308,
+      "y": 315
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 577.0,
+      "y": 459.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "sensitivityTab",
+      "x": 135.0,
+      "y": 97.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileTab",
+      "x": 135.0,
+      "y": 165.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedTab",
+      "x": 135.0,
+      "y": 199.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "lightingTab",
+      "x": 135.0,
+      "y": 131.0
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 313,
+      "y": 348
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 577.0,
+      "y": 459.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "sensitivityTab",
+      "x": 135.0,
+      "y": 97.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "dpiX0",
+      "x": 478.0,
+      "y": 193.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "dpiX0",
+      "index": 5,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "dpiY0",
+      "x": 478.0,
+      "y": 232.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "dpiY0",
+      "index": 6,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "resolutionActive0",
+      "x": 453.5,
+      "y": 271.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "resolutionDefault2",
+      "x": 533.5,
+      "y": 434.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "resolutionEnabled3",
+      "x": 700.5,
+      "y": 434.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "reportRate",
+      "x": 662.0,
+      "y": 492.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "reportRate",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Tab",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_tab_focus",
+      "object": "advancedSettingsLink",
+      "tabs": 1
+    },
+    {
+      "action": "mouse_click",
+      "object": "resetButton",
+      "x": 407.0,
+      "y": 677.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "dpiX0",
+      "x": 478.0,
+      "y": 193.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "dpiX0",
+      "index": 5,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "applyButton",
+      "x": 914.0,
+      "y": 677.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 0,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedTab",
+      "x": 135.0,
+      "y": 199.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "angleSnapping",
+      "x": 591.5,
+      "y": 162.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "debounce",
+      "x": 677.0,
+      "y": 196.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "debounce",
+      "index": 2,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "advancedReportRate",
+      "x": 677.0,
+      "y": 235.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "advancedReportRate",
+      "index": 2,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "resetButton",
+      "x": 407.0,
+      "y": 677.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "angleSnapping",
+      "x": 591.5,
+      "y": 162.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "applyButton",
+      "x": 914.0,
+      "y": 677.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 0,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileTab",
+      "x": 135.0,
+      "y": 165.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileSelect",
+      "x": 897.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "profileSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileName",
+      "x": 645.0,
+      "y": 166.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_W",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_O",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_R",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_K",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "profileName",
+      "value": "work"
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Tab",
+      "modifiers": 0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileEnabled",
+      "x": 523.5,
+      "y": 199.7890625
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileEnabled",
+      "x": 523.5,
+      "y": 199.7890625
+    },
+    {
+      "action": "mouse_click",
+      "object": "activateProfile",
+      "x": 643.0,
+      "y": 236.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "resetButton",
+      "x": 407.0,
+      "y": 677.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileSelect",
+      "x": 897.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "profileSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "profileName",
+      "x": 645.0,
+      "y": 166.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_W",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_O",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_R",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_K",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "profileName",
+      "value": "work"
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Tab",
+      "modifiers": 0
+    },
+    {
+      "action": "mouse_click",
+      "object": "applyButton",
+      "x": 914.0,
+      "y": 677.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 0,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 1,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "lightingTab",
+      "x": 135.0,
+      "y": 131.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledAssignment0",
+      "x": 779.5,
+      "y": 175.5
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledColor",
+      "x": 542.0,
+      "y": 334.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_B",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_D",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_C",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_O",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_L",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_O",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_R",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledColor",
+      "value": "badcolor"
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledSave",
+      "x": 679.0,
+      "y": 459.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 577.0,
+      "y": 488.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledAssignment0",
+      "x": 779.5,
+      "y": 175.5
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledMode",
+      "x": 538.0,
+      "y": 295.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "ledMode",
+      "index": 3,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledColor",
+      "x": 542.0,
+      "y": 334.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_NumberSign",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_3",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_3",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_F",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_F",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledColor",
+      "value": "#33aaff"
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledDuration",
+      "x": 449.0,
+      "y": 399.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_2",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledDuration",
+      "value": "2000"
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledBrightness",
+      "x": 454.0,
+      "y": 366.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Left",
+      "modifiers": 0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledCancel",
+      "x": 577.0,
+      "y": 459.0
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 313,
+      "y": 348
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledMode",
+      "x": 538.0,
+      "y": 295.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "ledMode",
+      "index": 3,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledColor",
+      "x": 542.0,
+      "y": 334.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_NumberSign",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_3",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_3",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_F",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_F",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledColor",
+      "value": "#33aaff"
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledDuration",
+      "x": 449.0,
+      "y": 399.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_2",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledDuration",
+      "value": "2000"
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledSave",
+      "x": 679.0,
+      "y": 459.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "resetButton",
+      "x": 407.0,
+      "y": 677.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledAssignment0",
+      "x": 779.5,
+      "y": 175.5
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledColor",
+      "x": 542.0,
+      "y": 334.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_NumberSign",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_3",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_3",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_F",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_F",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledColor",
+      "value": "#33aaff"
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledSave",
+      "x": 679.0,
+      "y": 459.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "applyButton",
+      "x": 914.0,
+      "y": 677.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "deviceSelect",
+      "x": 675.0,
+      "y": 20.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Up",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "deviceSelect",
+      "index": 0,
+      "route": "popup-item"
+    },
+    {
+      "action": "svg_pixel_click",
+      "layer": "leds",
+      "index": 0,
+      "x": 308,
+      "y": 315
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledMode",
+      "x": 538.0,
+      "y": 295.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Down",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_combo_select",
+      "object": "ledMode",
+      "index": 3,
+      "route": "popup-item"
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledColor",
+      "x": 542.0,
+      "y": 334.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_NumberSign",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_3",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_3",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_4",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_4",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_5",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_5",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledColor",
+      "value": "#334455"
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledDuration",
+      "x": 449.0,
+      "y": 399.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_1",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_5",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledDuration",
+      "value": "1500"
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledSave",
+      "x": 679.0,
+      "y": 459.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledDuration",
+      "x": 449.0,
+      "y": 365.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_1",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_5",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledDuration",
+      "value": "15000"
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledSave",
+      "x": 679.0,
+      "y": 493.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "resetButton",
+      "x": 407.0,
+      "y": 677.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledAssignment0",
+      "x": 779.5,
+      "y": 175.5
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledDuration",
+      "x": 449.0,
+      "y": 399.0
+    },
+    {
+      "action": "key_click",
+      "key": "Key_A",
+      "modifiers": 67108864
+    },
+    {
+      "action": "key_click",
+      "key": "Key_0",
+      "modifiers": 0
+    },
+    {
+      "action": "keyboard_replace",
+      "object": "ledDuration",
+      "value": "0"
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Return",
+      "modifiers": 0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledSave",
+      "x": 679.0,
+      "y": 459.0
+    },
+    {
+      "action": "mouse_click",
+      "object": "ledAssignment0",
+      "x": 779.5,
+      "y": 175.5
+    },
+    {
+      "action": "key_click",
+      "key": "Key_Escape",
+      "modifiers": 0
+    },
+    {
+      "action": "mouse_click",
+      "object": "resetButton",
+      "x": 407.0,
+      "y": 677.0
+    }
+  ],
+  "qml_warnings": []
+}

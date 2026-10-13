@@ -1,0 +1,67 @@
+{
+  "app-id": "io.github.jheinem1.PiperKirigami",
+  "branch": "development",
+  "runtime": "org.kde.Platform",
+  "runtime-version": "6.11",
+  "sdk": "org.kde.Sdk",
+  "base": "io.qt.PySide.BaseApp",
+  "base-version": "6.11",
+  "command": "piper-kirigami",
+  "separate-locales": false,
+  "rename-desktop-file": "org.freedesktop.Piper.Kirigami.desktop",
+  "rename-icon": "org.freedesktop.Piper.Kirigami",
+  "finish-args": [
+    "--share=ipc",
+    "--socket=wayland",
+    "--socket=fallback-x11",
+    "--device=dri",
+    "--system-talk-name=org.freedesktop.ratbag1"
+  ],
+  "build-options": {
+    "env": {
+      "BASEAPP_REMOVE_WEBENGINE": "1",
+      "BASEAPP_DISABLE_NUMPY": "1",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    }
+  },
+  "cleanup-commands": [
+    "/app/cleanup-BaseApp.sh"
+  ],
+  "modules": [
+    "python-dbus-next.json",
+    "python-test-tools.json",
+    {
+      "name": "piper-kirigami",
+      "buildsystem": "simple",
+      "build-commands": [
+        "meson setup _build qt-build --prefix=/app --buildtype=plain",
+        "meson compile -C _build",
+        "meson install -C _build --no-rebuild",
+        "install -Dm644 packaging/flatpak/io.github.jheinem1.PiperKirigami.metainfo.xml /app/share/metainfo/io.github.jheinem1.PiperKirigami.metainfo.xml",
+        "install -Dm644 packaging/flatpak/check-runtime.py /app/share/piper-kirigami/check-runtime.py",
+        "install -Dm644 THIRD_PARTY_NOTICES.md /app/share/licenses/piper-kirigami/THIRD_PARTY_NOTICES.md",
+        "QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software python3 packaging/flatpak/check-runtime.py",
+        "PYTHONPATH=/app/test-tools:. QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software python3 -m pytest -q tests/qt/test_backend.py tests/test_qt_diagrams.py tests/qt/test_kde_ui.py tests/qt/test_handbook.py tests/qt/test_desktop_style.py",
+        "PYTHONPATH=/app/test-tools:. QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software python3 tools/verify-kde-settings.py --skip-captures --output /tmp/piper-settings-qa",
+        "piper-kirigami --mock --headless --screenshot /tmp/piper-build-smoke.png",
+        "test -s /tmp/piper-build-smoke.png"
+      ],
+      "sources": [
+        {
+          "type": "dir",
+          "path": "../..",
+          "skip": [
+            ".git",
+            ".flatpak-builder",
+            "builddir",
+            "build-qt",
+            "dist",
+            "stage",
+            ".deps",
+            "__pycache__"
+          ]
+        }
+      ]
+    }
+  ]
+}

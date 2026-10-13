@@ -1,0 +1,103 @@
+name: Build development artifacts
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: artifacts-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flatpak:
+    name: JamesOS Flatpak · KDE 6.11 · x86_64
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test source packaging
+        run: python3 -m unittest discover -s packaging/tests -v
+      - name: Install build tools and matching Flathub dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder dbus-x11
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user --noninteractive -y flathub \
+            org.kde.Platform/x86_64/6.11 org.kde.Sdk/x86_64/6.11 io.qt.PySide.BaseApp/x86_64/6.11
+      - name: Build, test model and QML, and export development bundle
+        run: dbus-run-session -- bash packaging/flatpak/build.sh "$RUNNER_TEMP/flatpak-artifacts"
+      - name: Install bundle and verify its runtime in this disposable runner
+        run: |
+          flatpak install --user --noninteractive -y --bundle \
+            "$RUNNER_TEMP/flatpak-artifacts/io.github.jheinem1.PiperKirigami-x86_64-development.flatpak"
+          dbus-run-session -- bash packaging/flatpak/smoke-installed.sh "$RUNNER_TEMP/flatpak-artifacts"
+      - name: Upload tested Flatpak, source, checksums and build metadata
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: piper-kirigami-flatpak-x86_64-${{ github.sha }}
+          path: ${{ runner.temp }}/flatpak-artifacts/
+          if-no-files-found: error
+          retention-days: 30
+
+  rpm:
+    name: Optional native RPM · Fedora ${{ matrix.fedora }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        fedora: ['44']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Prepare committed source and generated spec
+        run: python3 packaging/prepare-source.py --output "$RUNNER_TEMP/rpmbuild"
+      - name: Build and test in matching Fedora container
+        env:
+          FEDORA: ${{ matrix.fedora }}
+        run: |
+          docker run --rm -v "$RUNNER_TEMP/rpmbuild:/rpmbuild" \
+            "registry.fedoraproject.org/fedora:$FEDORA" bash -euc '
+              dnf install -y rpm-build dnf5-plugins
+              dnf builddep -y /rpmbuild/SPECS/piper-kirigami.spec
+              export SOURCE_DATE_EPOCH=$(python3 -c '\''import json; print(json.load(open("/rpmbuild/BUILD-INFO.json"))["source_date_epoch"])'\'')
+              rpmbuild -ba --define "_topdir /rpmbuild" /rpmbuild/SPECS/piper-kirigami.spec
+            '
+      - name: Verify dependency closure and installed launcher in clean Fedora container
+        env:
+          FEDORA: ${{ matrix.fedora }}
+        run: |
+          docker run --rm -v "$RUNNER_TEMP/rpmbuild:/rpmbuild" \
+            "registry.fedoraproject.org/fedora:$FEDORA" bash -euc '
+              dnf install -y /rpmbuild/RPMS/noarch/*.rpm
+              rpm -q --requires piper-kirigami > /rpmbuild/runtime-requires.txt
+              rpm -ql piper-kirigami > /rpmbuild/installed-files.txt
+              rpm -qa | sort > /rpmbuild/runtime-packages.txt
+              cd /tmp
+              timeout 90s piper-kirigami --mock --headless --screenshot /rpmbuild/installed-smoke.png
+              test -s /rpmbuild/installed-smoke.png
+            '
+      - name: Collect RPM, SRPM, source and checksums
+        run: |
+          mkdir -p "$RUNNER_TEMP/rpm-artifacts"
+          cp "$RUNNER_TEMP"/rpmbuild/RPMS/noarch/*.rpm "$RUNNER_TEMP"/rpmbuild/SRPMS/*.rpm \
+            "$RUNNER_TEMP"/rpmbuild/SOURCES/*.tar.gz "$RUNNER_TEMP"/rpmbuild/SPECS/*.spec \
+            "$RUNNER_TEMP"/rpmbuild/BUILD-INFO.json "$RUNNER_TEMP"/rpmbuild/*.txt \
+            "$RUNNER_TEMP"/rpmbuild/installed-smoke.png "$RUNNER_TEMP/rpm-artifacts/"
+          cd "$RUNNER_TEMP/rpm-artifacts"
+          sha256sum -- * > SHA256SUMS
+      - name: Upload tested Fedora artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: piper-kirigami-fedora-${{ matrix.fedora }}-${{ github.sha }}
+          path: ${{ runner.temp }}/rpm-artifacts/
+          if-no-files-found: error
+          retention-days: 30

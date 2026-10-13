@@ -1,0 +1,3 @@
+# Match PySide6's Qt minor version to the distro's Kirigami/Qt packages.
+PySide6>=6.8,<7
+dbus-next>=0.2.3

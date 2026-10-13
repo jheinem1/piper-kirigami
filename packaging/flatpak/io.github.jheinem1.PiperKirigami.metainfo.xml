@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.jheinem1.PiperKirigami</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later AND CC-BY-SA-4.0</project_license>
+  <name>Piper Kirigami</name>
+  <summary>Configure gaming mice with an experimental Kirigami frontend</summary>
+  <description>
+    <p>A Qt 6 and KDE Kirigami frontend for ratbagd with mouse-button assignments,
+    sensitivity, lighting and on-device profile controls.</p>
+    <p>This is an experimental development build, separate from GTK Piper.
+    It requires a host ratbagd service with API version 2 and a supported mouse.
+    Hardware and firmware persistence have not been certified.</p>
+  </description>
+  <launchable type="desktop-id">io.github.jheinem1.PiperKirigami.desktop</launchable>
+  <url type="homepage">https://github.com/jheinem1/piper-kirigami</url>
+  <url type="bugtracker">https://github.com/jheinem1/piper-kirigami/issues</url>
+  <provides><binary>piper-kirigami</binary></provides>
+  <categories><category>Settings</category><category>HardwareSettings</category></categories>
+  <content_rating type="oars-1.1"/>
+</component>

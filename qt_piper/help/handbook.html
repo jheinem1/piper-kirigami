@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Piper Kirigami Handbook</title>
+<style>
+body { font-family: sans-serif; }
+h1 { margin-top: 0; }
+h2 { margin-top: 28px; }
+h3 { margin-top: 20px; }
+p, li { line-height: 150%; }
+code { font-family: monospace; }
+</style>
+</head>
+<body>
+<h1 id="contents"><a name="contents"></a>Piper Kirigami Handbook</h1>
+<p>Configure supported gaming mice through <b>ratbagd</b>, using a Qt 6 and KDE Kirigami interface. This handbook ships with the application and works offline.</p>
+<p><b>Development preview:</b> this is an experimental frontend based on Piper, not an official Piper release. Features depend on the device and its ratbagd driver. Real mouse behavior and firmware persistence still require testing on your hardware.</p>
+<h2>Contents</h2>
+<ol>
+<li><a href="#start">Getting started</a></li>
+<li><a href="#drafts">Save, Apply, Reset and Defaults</a></li>
+<li><a href="#buttons">Button assignments</a></li>
+<li><a href="#gshift">G600 and G-Shift</a></li>
+<li><a href="#macros">Keyboard shortcuts and macros</a></li>
+<li><a href="#sensitivity">Sensitivity and DPI stages</a></li>
+<li><a href="#lighting">Lighting</a></li>
+<li><a href="#profiles">On-device profiles</a></li>
+<li><a href="#advanced">Advanced settings</a></li>
+<li><a href="#search">Search, navigation and keyboard controls</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#flatpak">Flatpak and KDE integration</a></li>
+<li><a href="#limits">Limitations, support and licensing</a></li>
+</ol>
+
+<h2 id="start"><a name="start"></a>1. Getting started</h2>
+<ol>
+<li>Connect a mouse supported by libratbag. The host needs a running ratbagd service that permits access to the device.</li>
+<li>Start Piper Kirigami and select the <b>Device</b> in the top toolbar.</li>
+<li>Select the on-device <b>Profile</b> whose settings you want to inspect or edit. Selecting a profile in this menu does not activate it on the mouse.</li>
+<li>Choose <b>Buttons</b>, <b>Sensitivity</b>, <b>Lighting</b>, <b>Profiles</b> or <b>Advanced</b> in the sidebar.</li>
+<li>Make changes, then use <b>Apply</b> when you are ready to send the edits covered by that page to ratbagd. See the scope explained below.</li>
+</ol>
+<p>Unavailable controls reflect capabilities reported by the device's driver. A disabled control does not necessarily mean that the hardware lacks a feature; the driver may not expose it.</p>
+<p><b>Safe preview:</b> launch with <code>piper-kirigami --mock</code> to use simulated devices. Demo mode never contacts hardware. The “Capability test mouse” exists to exercise features that the G600 does not support. Launch without <code>--mock</code> to use the real system service; there is no silent fallback to demo devices.</p>
+
+<h2 id="drafts"><a name="drafts"></a>2. Save, Apply, Reset and Defaults</h2>
+<p>Editing controls changes a local draft. What <b>Apply</b> and <b>Reset</b> cover depends on the page:</p>
+<ul>
+<li><b>Individual assignment page:</b> Apply submits <b>only the current assignment draft</b>, for the displayed device, profile, layer and button. It does not submit unrelated sensitivity, lighting, profile or other button edits. Reset discards only this assignment's pending edits and restores its last known device state.</li>
+<li><b>Buttons overview:</b> <b>Apply</b> submits pending button assignments for <b>only the selected profile</b>, across both Normal and G-Shift layers. <b>Revert</b> discards that same group of assignment drafts. Neither action includes DPI, lighting, other settings or other profiles.</li>
+<li><b>Sensitivity:</b> Apply/Reset covers the selected profile's DPI stages and polling rate.</li>
+<li><b>Lighting:</b> Apply/Reset covers the selected profile's lighting zones.</li>
+<li><b>Advanced:</b> Apply/Reset covers the selected profile's angle snapping, debounce and polling rate. Polling rate is the same setting shown on Sensitivity.</li>
+<li><b>Profiles:</b> Apply/Reset covers the selected profile's supported name/enabled settings and active-profile selection on that device.</li>
+<li><b>Defaults:</b> automatic restoration is unavailable and this action is disabled. Reset does not restore factory settings and does not undo changes already applied.</li>
+</ul>
+<p>Page actions leave unrelated drafts intact, including pending button assignments and edits in other profiles or devices. A profile activation changes which on-device profile is active, but does not apply its unrelated settings drafts.</p>
+<p><b>Save lighting</b> keeps lighting-editor changes in the lighting draft and closes that editor. It does not write to the mouse; use the Lighting page Apply afterward. Cancel closes the lighting editor without saving its current edits.</p>
+<p>The assignment child page has its own Help, Reset, Defaults and Apply controls. Use <b>Back</b> to return to the overview. If you try to leave with an unapplied assignment draft, an unsaved-changes prompt lets you keep editing, discard that assignment's changes, or explicitly apply it and continue. Other pending drafts remain intact; navigation never silently applies them. Review the scope in the current page before pressing Apply.</p>
+<p>Settings drafts can remain while you move between settings pages or profiles; each page applies only its stated scope. Closing with pending changes requires a discard decision. In real mode, Apply can alter physical mouse settings and button behavior.</p>
+<p><b>Write completion:</b> ratbagd's commit is asynchronous. A submission message means that the request was handed to ratbagd, not that firmware persistence was independently verified. The application reports daemon errors, including delayed resynchronization failures. A failed write may have partially changed daemon or device state; follow the error guidance before discarding edits. Keep a way to recover mouse input when experimenting with essential buttons.</p>
+
+<h2 id="buttons"><a name="buttons"></a>3. Button assignments</h2>
+<ol>
+<li>Open <b>Buttons</b> and choose Normal or G-Shift when the device has layers.</li>
+<li>Select a numbered target on the mouse diagram. Its assignment is highlighted and scrolled into view in the list.</li>
+<li>Open that assignment from its row or edit control. When the diagram has keyboard focus, Enter opens the selected assignment.</li>
+<li>The individual assignment opens as a <b>child settings page inside the main window</b>. Check its device, profile, layer and button, then choose an action and fill its fields.</li>
+<li>Use the child page's <b>Apply</b> to submit only that assignment. Use Back to return to Buttons; an unapplied draft triggers a navigation prompt.</li>
+</ol>
+<h3 id="assignment-write-scope"><a name="assignment-write-scope"></a>Assignment page: Help, Reset, Defaults and Apply</h3>
+<p><b>Help</b> and <b>F1</b> open the topic for the selected assignment type. <b>Reset</b> discards only this page's current draft. <b>Defaults</b> is unavailable because automatic restoration is not supported. <b>Apply</b> sends only the current assignment to ratbagd; it does not submit unrelated general settings drafts. The Buttons overview has its own broader Apply/Revert scope: the selected profile's pending button assignments in both layers. It still excludes DPI, lighting and other profiles.</p>
+<p>Changing fields alone does not write to hardware. Review the target before Apply, particularly for essential click buttons. The page retains errors when validation or submission fails. After a partial write, follow the error guidance rather than assuming Reset can roll back hardware. Choosing Back, another setting, device, profile or assignment while this page has unsaved work asks how to handle that draft.</p>
+<p>You can also use the quick-record action directly in an overview row. Press the shortcut, then choose <b>Stop recording</b> to stage a valid recording for that assignment. Recording stages a pending assignment; it never writes automatically. <b>Cancel</b> discards the current recording. Finish or cancel before changing the layer, page, device or profile.</p>
+<p>On the overview, clicking Help stops capture so handbook keys are not recorded. For an interrupted overview recording, return and choose <b>Use shortcut</b> to stage it, or Cancel to discard it. Review the selected profile and layer, then use the overview Apply to submit that profile's pending button assignments. Revert discards that profile's pending assignment drafts. For the full set of action fields, open the assignment child page.</p>
+<p>Available action types come from the selected device:</p>
+<ul>
+<li><a href="#assignment-button">Mouse button</a></li>
+<li><a href="#assignment-key">Keyboard key</a></li>
+<li><a href="#assignment-special">Special action</a></li>
+<li><a href="#assignment-macro">Macro</a></li>
+<li><a href="#assignment-none">Disabled</a></li>
+</ul>
+<h3 id="assignment-button"><a name="assignment-button"></a>Mouse-button assignment</h3>
+<p>Choose <b>Mouse button</b>, then click its current value to open the searchable mouse-button list. Select the number to send when this physical control is pressed, then choose <b>OK</b> to keep it in the assignment draft. Numbers refer to mouse-button actions, not keyboard keycodes or diagram indices. The G600 driver accepts mouse actions 1–5; other devices may expose a different supported range.</p>
+<p>Apply submits only this assignment. Reset restores this assignment's draft. See <a href="#assignment-write-scope">assignment page actions and write scope</a>.</p>
+<h3 id="assignment-key"><a name="assignment-key"></a>Keyboard-key assignment</h3>
+<p>Choose <b>Keyboard key</b>, then click its current value to open the complete searchable list available for this assignment. Search by name or numeric <b>Linux evdev keycode</b>, then select a result and choose <b>OK</b>. A keycode identifies the physical key event; it is not a Unicode value or a typed character. For a chord such as Ctrl+C, select Macro instead.</p>
+<p>In a value picker, use the search field to filter by name or number, then select a result with the mouse or Up/Down keys. The current value is marked. Enter confirms a valid selection, like OK. Selection remains local to the popup until you choose <b>OK</b>; OK is unavailable without a valid selection. Cancel, Escape or closing the popup leaves the assignment draft unchanged. Keeping a value with OK still requires the assignment page's Apply to submit it.</p>
+<p>Apply submits only this assignment. Reset restores this assignment's draft. See <a href="#assignment-write-scope">assignment page actions and write scope</a>.</p>
+<h3 id="assignment-special"><a name="assignment-special"></a>Special-action assignment</h3>
+<p>Choose <b>Special action</b> and select one of the driver's supported functions, such as DPI or profile control or a second-mode action. The list is capability-filtered; unsupported device functions cannot be enabled through this control. The Default DPI action selects the DPI stage marked Default on Sensitivity; it does not reset factory settings.</p>
+<p>Apply submits only this assignment. Reset restores this assignment's draft. See <a href="#assignment-write-scope">assignment page actions and write scope</a>.</p>
+<h3 id="assignment-macro"><a name="assignment-macro"></a>Macro assignment</h3>
+<p>Choose <b>Macro / key combination</b> and use the visual event editor to build or change the sequence. These edits change only the current assignment's local draft; review the events before Apply.</p>
+<p>The visual <b>Events</b> panel is always visible for this assignment type. Each numbered row displays its event type and value together. Devices with unrestricted macro support also offer Delay events. Add, remove or reorder rows; incomplete or unsupported sequences keep Apply disabled.</p>
+<p>The G600 accepts one non-modifier key with modifiers, not arbitrary timed or multi-key sequences. See <a href="#macros">recording and event-editor details</a> for event types and an example.</p>
+<p>Apply submits only this assignment. Reset restores this assignment's draft. See <a href="#assignment-write-scope">assignment page actions and write scope</a>.</p>
+<h3 id="assignment-none"><a name="assignment-none"></a>Disabled assignment</h3>
+<p>Choose <b>Disabled</b> to assign no action to this physical control in the selected profile and layer. There are no additional action fields. Disabling an essential click button can make the mouse difficult to use, so review the target and keep a way to recover input.</p>
+<p>Apply submits only this assignment. Reset restores this assignment's draft. See <a href="#assignment-write-scope">assignment page actions and write scope</a>.</p>
+
+<h2 id="gshift"><a name="gshift"></a>4. G600 and G-Shift</h2>
+<p>For the Logitech G600, choose <b>Normal</b> or <b>G-Shift</b> assignments using the tabs above the diagram and assignment list. The same physical mouse diagram is used for both layers.</p>
+<p><b>The layer selector is view-only.</b> It does not hold G-Shift, enable G-Shift on the mouse, activate a hardware profile, or create pending changes. It chooses which layer you inspect and edit. Editing an assignment in that layer is a separate operation, and still requires Apply.</p>
+<p>The G600 driver exposes twenty normal assignments and twenty shifted assignments. Its reserved internal index 20 is excluded; shifted assignments use indices 21–40. Display labels identify physical controls rather than asking you to work with these raw indices.</p>
+<p>The G600 supports mouse actions 1–5 and a restricted set of special actions. Its shortcut support is a single non-modifier key with modifier keys. Arbitrary timed or multi-key sequences are rejected. Profile rename/disable, stage disable, independent X/Y sensitivity and LED brightness are unavailable when the driver does not support them.</p>
+
+<h2 id="macros"><a name="macros"></a>5. Keyboard shortcuts and macros</h2>
+<p>Choose <b>Macro / key combination</b> on the assignment child page to edit its sequence visually. The event editor changes only this assignment's local draft; review it before Apply.</p>
+<p>To record a shortcut instead, use the quick-record action in a Buttons overview row, then choose <b>Stop recording</b> to stage it. Recording receives application keyboard events; it is not a system-wide recorder. While capture is active, application shortcuts such as F1 and Ctrl+F are recorded. Clicking Help stops capture and leaves the choice to Use shortcut or Cancel.</p>
+<p>The <b>Events</b> panel shows the sequence as numbered rows whenever Macro / key combination is selected:</p>
+<ul>
+<li><b>Add…:</b> use the action in the Events header. In the popup, choose Key down or Key up and select a key from the searchable list. Choose <b>OK</b> to insert that one event. Selecting a key alone inserts nothing. Cancel, Escape or closing the popup inserts nothing; a matching release event is not added automatically.</li>
+<li><b>Replace:</b> existing events have fixed types and values. Remove an event and add a replacement to change its key, event type or delay. On supported devices, choose Delay in the Add… popup, set milliseconds and confirm with OK.</li>
+<li><b>Reorder:</b> use the up/down controls to move a row one place.</li>
+<li><b>Remove:</b> use the row's remove control to delete that event from the draft.</li>
+</ul>
+<p>Events run from top to bottom. Pair every Key down with a matching Key up. For Ctrl+C, use four rows in this order: Key down Left Control, Key down C, Key up C, Key up Left Control. Recording that chord with the overview quick recorder creates these events for you.</p>
+<p><b>Device limits:</b> the G600 accepts one non-modifier key with modifiers. Place the chord's Key down events before its Key up events, with the main key released before its modifiers. Its event editor offers Key down and Key up only; delays and arbitrary multi-key sequences are unavailable. Devices with unrestricted macro support also offer Delay, with a duration from 1 to 60,000 milliseconds.</p>
+<p>The event editor changes only the local draft. Apply stays disabled while a sequence is incomplete, unbalanced or unsupported; read the validation message and correct the rows. Removing a row may temporarily leave an incomplete sequence. Apply still affects only this assignment.</p>
+<p>The overview quick recorder supports common letters, numbers, modifiers, navigation keys and F1–F12. If a key cannot be recorded, no partial shortcut is accepted. Choose a supported key in the event editor or record another shortcut. A new recording clears the previous recording error.</p>
+
+<h2 id="sensitivity"><a name="sensitivity"></a>6. Sensitivity and DPI stages</h2>
+<p>Each DPI stage stores one supported sensitivity value, or separate X and Y values when the device supports independent axes. Higher DPI produces more pointer movement for the same physical travel. Choose from the values supplied by the driver.</p>
+<ul>
+<li><b>Enabled:</b> include the stage when cycling sensitivity. Devices that keep every stage enabled show this as unavailable.</li>
+<li><b>Active:</b> the currently selected DPI stage. Choosing a different stage is a pending change until Apply.</li>
+<li><b>Default:</b> the stage used by the <b>Default DPI</b> button action. It does not mean restoring factory defaults.</li>
+</ul>
+<p><b>Polling rate</b>, in hertz, controls how often the device reports input. Only supported rates are offered. The polling-rate control on Advanced edits the same setting. The application does not benchmark latency or recommend a particular rate for your computer.</p>
+
+<h2 id="lighting"><a name="lighting"></a>7. Lighting</h2>
+<p>Open <b>Lighting</b> and click a lighting zone in the diagram or list. Unlike button diagram selection, selecting a lighting target opens its editor directly.</p>
+<ul>
+<li><b>Effect:</b> choose from the supported effects, such as Off, Solid, Cycle or Breathing.</li>
+<li><b>Color:</b> enter a six-digit RGB value in <code>#RRGGBB</code> form, for example <code>#00aaff</code>. The swatch previews that value.</li>
+<li><b>Brightness:</b> adjust the level if the driver supports it.</li>
+<li><b>Effect duration:</b> specify milliseconds for effects that use timing. Its visible effect depends on the selected mode and device.</li>
+</ul>
+<p>Unsupported color or brightness controls are disabled. Save lighting keeps the draft; Apply sends it to ratbagd. The on-screen swatch is not evidence that the physical LEDs changed.</p>
+
+<h2 id="profiles"><a name="profiles"></a>8. On-device profiles</h2>
+<p>The Profile menu chooses which existing on-device ratbagd slot you are editing. This is distinct from making that profile active on the mouse.</p>
+<p>On the <b>Profiles</b> page:</p>
+<ul>
+<li><b>Name:</b> edit the name where renaming is supported.</li>
+<li><b>Enabled:</b> include or exclude a profile where supported. An active profile cannot be disabled; activate another enabled profile first.</li>
+<li><b>Make active:</b> stage the selected profile as the active hardware profile. Use Apply to submit that change.</li>
+</ul>
+<p><b>No saved-profile library:</b> this release manages only the device's existing slots. It does not create a separate collection of profiles on disk, import or export profiles, copy them between devices, or integrate with the separate JamesOS saved-profile library. Closing the app discards unapplied local drafts rather than saving them as reusable profiles.</p>
+
+<h2 id="advanced"><a name="advanced"></a>9. Advanced settings</h2>
+<ul>
+<li><b>Angle snapping:</b> driver-supported correction that can make near-straight pointer movement straighter. It may be unsuitable when you want uncorrected movement.</li>
+<li><b>Debounce time:</b> the supported interval, in milliseconds, used to filter repeated switch transitions. Available values come from the driver.</li>
+<li><b>Polling rate:</b> the same profile setting shown on Sensitivity.</li>
+</ul>
+<p>Unavailable settings show an explanation. Changing these controls creates a draft and does not bypass Apply.</p>
+
+<h2 id="search"><a name="search"></a>10. Search, navigation and keyboard controls</h2>
+<p>The top-left search field finds settings sections and button assignments in the selected device/profile. Search terms can include a physical button label, its assigned action, or Normal/G-Shift. Matching assignments appear beneath Buttons. Results stay visible until you clear or change the query.</p>
+<p>Activating an assignment result switches to the appropriate layer, selects its physical button and reveals its row. It does not change that assignment. In the search field, use Up/Down to select a result and Enter to activate it.</p>
+<ul>
+<li><b>Ctrl+F in the main window:</b> focus the settings search.</li>
+<li><b>Tab / Shift+Tab:</b> move between controls. Arrow keys navigate controls such as lists and combo boxes.</li>
+<li><b>Enter on the focused mouse diagram:</b> open the selected assignment.</li>
+<li><b>Alt+Left on an assignment page:</b> go Back, with an unsaved-draft prompt when needed. Escape does not navigate away from that page; it dismisses an open value picker without changing the draft.</li>
+<li><b>Ctrl+Enter:</b> use the Apply action for the current editing scope when available. On an assignment page, this covers only that assignment. On Buttons overview, Apply covers the selected profile's pending button assignments in both layers.</li>
+<li><b>F1 / Help:</b> outside shortcut recording, open the authored help topic matching the current settings page or assignment type. Contextual Help is available only when a matching topic exists. The application menu provides <b>Piper Kirigami Handbook</b> for general reading.</li>
+<li><b>Ctrl+F in the handbook:</b> focus its text search; Enter or F3 finds the next match and Shift+F3 finds the previous match.</li>
+<li><b>Esc in the handbook:</b> close the handbook and return to the application.</li>
+</ul>
+<p>The application menu also provides device refresh and Breeze Light/Breeze Dark. The handbook uses native Qt controls and the application's palette.</p>
+
+<h2 id="troubleshooting"><a name="troubleshooting"></a>11. Troubleshooting</h2>
+<h3>No connected device or service error</h3>
+<p>Check that the mouse is connected and supported by your installed libratbag version. ratbagd runs on the host, outside the Flatpak. It must expose <code>org.freedesktop.ratbag1</code> on the system D-Bus and use API version 2. An administrator may need to check installation, service state and device permissions. The frontend does not install or start the service for you, request root access, or access raw HID/input devices itself.</p>
+<p>Once the service or connection is corrected, use <b>Refresh devices</b> from the menu or the empty-state Refresh button. The menu action is disabled while there are pending edits or a write is in progress. Decide whether to apply or reset pending changes first. Do not use refresh as a substitute for saving drafts.</p>
+<h3>A setting is disabled</h3>
+<p>Read the nearby capability explanation and confirm the selected device and profile. The simulated capability-test device demonstrates controls that may be unavailable on a real mouse. A missing feature requires driver support; changing frontend values cannot create that support.</p>
+<h3>Apply failed or the mouse disconnected</h3>
+<p>Read the error before retrying. The application may have submitted only some changes. Reset can be blocked after a partial real write to avoid presenting a false rollback. Retry Apply when appropriate, or unplug and reconnect the device as the error suggests before discarding edits. After reconnecting, inspect the actual state reported by ratbagd. Already committed settings may persist after reconnecting.</p>
+<h3>Changes disappeared after restarting</h3>
+<p>Changing assignment fields creates only a local draft; the child page Apply submits that assignment. Save lighting keeps a lighting draft that needs the Lighting page Apply. If a submitted setting later reverts, report the device, driver and reproducible steps; this application does not independently verify firmware persistence.</p>
+<h3>Macro or color rejected</h3>
+<p>Use a valid <code>#RRGGBB</code> color. Check the event types, selected keys and balanced Key down/Key up rows in the macro event editor. G600 shortcuts must stay within its single-key-plus-modifiers restriction.</p>
+<h3>The app fails before opening</h3>
+<p>Native packages need matching Qt, PySide6, Kirigami and KDE desktop-style libraries. Arbitrary pip Qt wheels can be incompatible with distribution QML plugins. Prefer a matched distribution package set or a tested Flatpak build. The development app requires Breeze style, icons and color schemes. Include the error message and package/runtime versions in a bug report.</p>
+
+<h2 id="flatpak"><a name="flatpak"></a>12. Flatpak and KDE integration</h2>
+<p>The development Flatpak ID is <code>io.github.jheinem1.PiperKirigami</code>. It talks to the host's ratbagd service using a specific D-Bus permission. It does not bundle a daemon and does not require direct raw-device access.</p>
+<p>This offline handbook is installed inside the application and displayed by native Qt widgets, with the standard F1 help shortcut. It needs no web service, WebEngine, home-directory access or extra Flatpak permission.</p>
+<p><b>KHelpCenter:</b> this release does not register a DocBook handbook with KDE Help Center. The native in-app handbook works both in the sandbox and with distribution packages. Direct host KHelpCenter integration would need additional packaging and tested document discovery; it is not implied by the F1 shortcut.</p>
+<p>Public support links, when clicked, open through the desktop's browser handler. They need an available browser/portal and network connection in that browser; they are optional and are not required to read the handbook.</p>
+
+<h2 id="limits"><a name="limits"></a>13. Limitations, support and licensing</h2>
+<p>This preview is English-only. Full screen-reader accessibility, real Wayland/X11 integration, live desktop theme changes, physical mouse behavior, RGB output and firmware persistence need further testing. Automated fixture and D-Bus tests are useful protocol/UI checks, not hardware certification.</p>
+<p>For a useful bug report include the app version or source commit, distribution, Flatpak/runtime or native package versions, mouse model, ratbagd version, selected profile/layer, the steps to reproduce, expected behavior and the exact error. State whether you were in mock or real mode. Review logs and screenshots for private information before sharing.</p>
+<ul>
+<li><a href="https://github.com/jheinem1/piper-kirigami">Piper Kirigami project</a></li>
+<li><a href="https://github.com/libratbag/libratbag">libratbag and ratbagd</a></li>
+<li><a href="https://github.com/libratbag/piper">Upstream Piper</a></li>
+<li><a href="https://kde.org/support/">KDE documentation and support</a></li>
+</ul>
+<p>Application code and this handbook: GPL-2.0-or-later. The original Piper artwork and other contributions retain their per-file licenses and attribution, including CC-BY-SA-4.0 for some device artwork. See the packaged COPYING and third-party notices. This project does not imply endorsement by KDE, Piper, Logitech or other device vendors.</p>
+<p><a href="#contents">Back to contents</a></p>
+</body>
+</html>

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Piper Kirigami
+Comment=Configure gaming mice using ratbagd
+Exec=piper-kirigami
+Icon=org.freedesktop.Piper.Kirigami
+Terminal=false
+Categories=Settings;HardwareSettings;Qt;KDE;
+Keywords=Mouse;Gaming;DPI;RGB;
+StartupNotify=true
