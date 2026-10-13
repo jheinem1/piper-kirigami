@@ -35,7 +35,7 @@ jobs:
           # The runner's builder 1.2 still invokes appstream-compose, which the
           # current KDE SDK replaced with appstreamcli. Use the maintained builder.
           mkdir -p "$RUNNER_TEMP/piper-build-tools"
-          printf '%s\n' '#!/usr/bin/env bash' 'exec flatpak run org.flatpak.Builder "$@"' \
+          printf '%s\n' '#!/usr/bin/env bash' 'exec flatpak run --socket=x11 --share=ipc org.flatpak.Builder "$@"' \
             > "$RUNNER_TEMP/piper-build-tools/flatpak-builder"
           chmod +x "$RUNNER_TEMP/piper-build-tools/flatpak-builder"
           echo "$RUNNER_TEMP/piper-build-tools" >> "$GITHUB_PATH"
