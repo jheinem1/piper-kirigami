@@ -2070,6 +2070,18 @@ def scenario_hig_accessibility(h):
         h.click("resetButton")
         h.back()
     h.select_device("G600")
+    h.window.resize(960, 700)
+    h.set_layer(True)
+    h.edit_row(29)
+    for name in [
+        "assignmentSequenceSummary",
+        "assignmentShortcutHint",
+        "macroAddEvent",
+        "applyButton",
+    ]:
+        assert h.fully_visible(h.find(name)), name
+    h.capture(f"kde-hig-g600-shortcut-960-{points}pt")
+    h.back()
     h.window.resize(1400, 820)
     h.settle(150)
     for shifted in [False, True]:
@@ -2679,6 +2691,7 @@ def scenario_visual_events(h):
     h.add_event(1, 64)
     h.add_event(2, 64)
     assert h.payload()["value"] == [[1, 64], [2, 64]]
+    assert h.find("assignmentSequenceSummary").property("text") == "2 events"
     assert not h.find("macroJson").isVisible()
     panel = h.find("macroEventPanel")
     assert panel.width() > h.find("assignmentPage").width() * 0.9
@@ -2697,6 +2710,7 @@ def scenario_visual_events(h):
     h.click("valuePickerCancel")
     assert h.payload() == before and h.find("macroAddEvent").hasActiveFocus()
     add(1, 30)
+    assert h.find("assignmentSequenceSummary").property("text") == "3 events"
     assert not h.find("applyButton").isEnabled()
     assert h.find("mappingValidation").isVisible()
     add(2, 30)
@@ -2753,6 +2767,17 @@ def scenario_visual_events(h):
     h.back()
 
     h.select_device("G600")
+    h.set_layer(True)
+    h.edit_row(29)
+    assert h.find("mappingType").property("currentText") == "Keyboard shortcut"
+    assert h.find("assignmentSequenceSummary").property("text") == "Left Shift + 1"
+    h.click("macroEventRemove0")
+    assert h.find("assignmentSequenceSummary").property("text") == "1"
+    assert not h.find("applyButton").isEnabled()
+    h.click("resetButton")
+    assert h.find("assignmentSequenceSummary").property("text") == "Left Shift + 1"
+    h.back()
+    h.set_layer(False)
     h.quick_record(0, (Qt.Key.Key_Control,))
     h.edit_row(0)
     events = h.payload()["value"]

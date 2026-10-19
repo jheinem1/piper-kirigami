@@ -57,7 +57,7 @@ code { font-family: monospace; }
 <li><b>Defaults:</b> automatic restoration is unavailable and this action is disabled. Reset does not restore factory settings and does not undo changes already applied.</li>
 </ul>
 <p>Page actions leave unrelated drafts intact, including pending button assignments and edits in other profiles or devices. A profile activation changes which on-device profile is active, but does not apply its unrelated settings drafts.</p>
-<p><b>Save lighting</b> keeps lighting-editor changes in the lighting draft and closes that editor. It does not write to the mouse; use the Lighting page Apply afterward. Cancel closes the lighting editor without saving its current edits.</p>
+<p><b>OK in the lighting editor</b> keeps lighting-editor changes in the lighting draft and closes that editor. It does not write to the mouse; use the Lighting page Apply afterward. Cancel closes the lighting editor without saving its current edits.</p>
 <p>The assignment child page has its own Help, Reset, Defaults and Apply controls. Use <b>Back</b> to return to the overview. If you try to leave with an unapplied assignment draft, an unsaved-changes prompt lets you keep editing, discard that assignment's changes, or explicitly apply it and continue. Other pending drafts remain intact; navigation never silently applies them. Review the scope in the current page before pressing Apply.</p>
 <p>Settings drafts can remain while you move between settings pages or profiles; each page applies only its stated scope. Closing with pending changes requires a discard decision. In real mode, Apply can alter physical mouse settings and button behavior.</p>
 <p><b>Write completion:</b> ratbagd's commit is asynchronous. A submission message means that the request was handed to ratbagd, not that firmware persistence was independently verified. The application reports daemon errors, including delayed resynchronization failures. A failed write may have partially changed daemon or device state; follow the error guidance before discarding edits. Keep a way to recover mouse input when experimenting with essential buttons.</p>
@@ -87,14 +87,14 @@ code { font-family: monospace; }
 <p>Choose <b>Mouse button</b>, then click its current value to open the searchable mouse-button list. Select the number to send when this physical control is pressed, then choose <b>OK</b> to keep it in the assignment draft. Numbers refer to mouse-button actions, not keyboard keycodes or diagram indices. The G600 driver accepts mouse actions 1–5; other devices may expose a different supported range.</p>
 <p>Apply submits only this assignment. Reset restores this assignment's draft. See <a href="#assignment-write-scope">assignment page actions and write scope</a>.</p>
 <h3 id="assignment-key"><a name="assignment-key"></a>Keyboard-key assignment</h3>
-<p>Choose <b>Keyboard key</b>, then click its current value to open the complete searchable list available for this assignment. Search by name or numeric <b>Linux evdev keycode</b>, then select a result and choose <b>OK</b>. A keycode identifies the physical key event; it is not a Unicode value or a typed character. For a chord such as Ctrl+C, select Macro instead.</p>
+<p>Choose <b>Keyboard key</b>, then click its current value to open the complete searchable list available for this assignment. Search by name or numeric <b>Linux evdev keycode</b>, then select a result and choose <b>OK</b>. A keycode identifies the physical key event; it is not a Unicode value or a typed character. For a chord such as Ctrl+C, select Keyboard shortcut on G600, or Macro on other devices.</p>
 <p>In a value picker, use the search field to filter by name or number, then select a result with the mouse or Up/Down keys. The current value is marked. Enter confirms a valid selection, like OK. Selection remains local to the popup until you choose <b>OK</b>; OK is unavailable without a valid selection. Cancel, Escape or closing the popup leaves the assignment draft unchanged. Keeping a value with OK still requires the assignment page's Apply to submit it.</p>
 <p>Apply submits only this assignment. Reset restores this assignment's draft. See <a href="#assignment-write-scope">assignment page actions and write scope</a>.</p>
 <h3 id="assignment-special"><a name="assignment-special"></a>Special-action assignment</h3>
 <p>Choose <b>Special action</b> and select one of the driver's supported functions, such as DPI or profile control or a second-mode action. The list is capability-filtered; unsupported device functions cannot be enabled through this control. The Default DPI action selects the DPI stage marked Default on Sensitivity; it does not reset factory settings.</p>
 <p>Apply submits only this assignment. Reset restores this assignment's draft. See <a href="#assignment-write-scope">assignment page actions and write scope</a>.</p>
 <h3 id="assignment-macro"><a name="assignment-macro"></a>Macro assignment</h3>
-<p>Choose <b>Macro / key combination</b> and use the visual event editor to build or change the sequence. These edits change only the current assignment's local draft; review the events before Apply.</p>
+<p>Choose <b>Keyboard shortcut</b> on G600, or <b>Macro</b> on other devices. Use the visual event editor to build or change the sequence. These edits change only the current assignment's local draft; review the events before Apply.</p>
 <p>The visual <b>Events</b> panel is always visible for this assignment type. Each numbered row displays its event type and value together. Devices with unrestricted macro support also offer Delay events. Add, remove or reorder rows; incomplete or unsupported sequences keep Apply disabled.</p>
 <p>The G600 accepts one non-modifier key with modifiers, not arbitrary timed or multi-key sequences. See <a href="#macros">recording and event-editor details</a> for event types and an example.</p>
 <p>Apply submits only this assignment. Reset restores this assignment's draft. See <a href="#assignment-write-scope">assignment page actions and write scope</a>.</p>
@@ -109,9 +109,9 @@ code { font-family: monospace; }
 <p>The G600 supports mouse actions 1–5 and a restricted set of special actions. Its shortcut support is a single non-modifier key with modifier keys. Arbitrary timed or multi-key sequences are rejected. Profile rename/disable, stage disable, independent X/Y sensitivity and LED brightness are unavailable when the driver does not support them.</p>
 
 <h2 id="macros"><a name="macros"></a>5. Keyboard shortcuts and macros</h2>
-<p>Choose <b>Macro / key combination</b> on the assignment child page to edit its sequence visually. The event editor changes only this assignment's local draft; review it before Apply.</p>
+<p>On the assignment child page, choose <b>Keyboard shortcut</b> on G600, or <b>Macro</b> on other devices, to edit the sequence visually. The event editor changes only this assignment's local draft; review it before Apply.</p>
 <p>To record a shortcut instead, use the quick-record action in a Buttons overview row, then choose <b>Stop recording</b> to stage it. Recording receives application keyboard events; it is not a system-wide recorder. While capture is active, application shortcuts such as F1 and Ctrl+F are recorded. Clicking Help stops capture and leaves the choice to Use shortcut or Cancel.</p>
-<p>The <b>Events</b> panel shows the sequence as numbered rows whenever Macro / key combination is selected:</p>
+<p>The <b>Events</b> panel shows the sequence as numbered rows for a Keyboard shortcut or Macro assignment:</p>
 <ul>
 <li><b>Add…:</b> use the action in the Events header. In the popup, choose Key down or Key up and select a key from the searchable list. Choose <b>OK</b> to insert that one event. Selecting a key alone inserts nothing. Cancel, Escape or closing the popup inserts nothing; a matching release event is not added automatically.</li>
 <li><b>Replace:</b> existing events have fixed types and values. Remove an event and add a replacement to change its key, event type or delay. On supported devices, choose Delay in the Add… popup, set milliseconds and confirm with OK.</li>
@@ -140,7 +140,7 @@ code { font-family: monospace; }
 <li><b>Brightness:</b> adjust the level if the driver supports it.</li>
 <li><b>Effect duration:</b> specify milliseconds for effects that use timing. Its visible effect depends on the selected mode and device.</li>
 </ul>
-<p>Unsupported color or brightness controls are disabled. Save lighting keeps the draft; Apply sends it to ratbagd. The on-screen swatch is not evidence that the physical LEDs changed.</p>
+<p>Unsupported color or brightness controls are disabled. OK in the lighting editor keeps the draft; Apply sends it to ratbagd. The on-screen swatch is not evidence that the physical LEDs changed.</p>
 
 <h2 id="profiles"><a name="profiles"></a>8. On-device profiles</h2>
 <p>The Profile menu chooses which existing on-device ratbagd slot you are editing. This is distinct from making that profile active on the mouse.</p>
@@ -184,7 +184,7 @@ code { font-family: monospace; }
 <h3>Apply failed or the mouse disconnected</h3>
 <p>Read the error before retrying. The application may have submitted only some changes. Reset can be blocked after a partial real write to avoid presenting a false rollback. Retry Apply when appropriate, or unplug and reconnect the device as the error suggests before discarding edits. After reconnecting, inspect the actual state reported by ratbagd. Already committed settings may persist after reconnecting.</p>
 <h3>Changes disappeared after restarting</h3>
-<p>Changing assignment fields creates only a local draft; the child page Apply submits that assignment. Save lighting keeps a lighting draft that needs the Lighting page Apply. If a submitted setting later reverts, report the device, driver and reproducible steps; this application does not independently verify firmware persistence.</p>
+<p>Changing assignment fields creates only a local draft; the child page Apply submits that assignment. OK in the lighting editor keeps a lighting draft that needs the Lighting page Apply. If a submitted setting later reverts, report the device, driver and reproducible steps; this application does not independently verify firmware persistence.</p>
 <h3>Macro or color rejected</h3>
 <p>Use a valid <code>#RRGGBB</code> color. Check the event types, selected keys and balanced Key down/Key up rows in the macro event editor. G600 shortcuts must stay within its single-key-plus-modifiers restriction.</p>
 <h3>The app fails before opening</h3>

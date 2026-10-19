@@ -96,11 +96,18 @@ Dialog {
                 Label { text: "ms" }
             }
         }
+        Label {
+            objectName: "ledApplyHint"
+            Layout.fillWidth: true; wrapMode: Text.WordWrap
+            text: "OK keeps these changes; Apply on the Lighting page sends them to the mouse."
+            color: Kirigami.Theme.disabledTextColor
+        }
         Kirigami.InlineMessage { id: validation; objectName: "ledValidation"; Layout.fillWidth: true; text: dialog.inputValidation || dialog.backendValidation || dialog.colorValidationMessage; visible: dialog.visible && (dialog.inputValidation !== "" || dialog.backendValidation !== ""); type: Kirigami.MessageType.Error }
     }
     footer: DialogButtonBox {
         Button { objectName: "ledCancel"; text: "Cancel"; DialogButtonBox.buttonRole: DialogButtonBox.RejectRole }
-        Button { objectName: "ledSave"; text: "Save lighting"; enabled: dialog.inputValidation === ""; DialogButtonBox.buttonRole: DialogButtonBox.ApplyRole; onClicked: dialog.save() }
+        // Close only after save() accepts the draft, including backend validation.
+        Button { objectName: "ledSave"; text: "OK"; Accessible.description: "Keep changes in the lighting draft and close. Apply on the Lighting page sends them to the mouse."; enabled: dialog.inputValidation === ""; DialogButtonBox.buttonRole: DialogButtonBox.ApplyRole; onClicked: dialog.save() }
         onRejected: dialog.close()
     }
 }

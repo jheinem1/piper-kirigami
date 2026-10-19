@@ -53,7 +53,7 @@ def capture_pages(h):
                         "advancedTab",
                         ["angleSnapping", "debounce", "advancedReportRate"],
                     ),
-                    ("lighting", "lightingTab", ["ledAssignment0", "diagramTarget0"]),
+                    ("lighting", "lightingTab", ["ledAssignment0", "diagramArea"]),
                 ]:
                     h.click(tab)
                     check_controls(h, controls)
@@ -170,7 +170,10 @@ def lighting(h):
     h.select_device("Capability")
     h.click("lightingTab")
     original = deepcopy(h.backend.selectedProfile["leds"][0])
+    writes_before_editor = deepcopy(h.backend._transport.calls)
     h.click("ledAssignment0")
+    assert h.find("ledSave").property("text") == "OK"
+    assert h.fully_visible(h.find("ledApplyHint"))
     h.text("ledColor", "badcolor")
     assert not h.find("ledSave").isEnabled()
     assert h.find("ledValidation").property("visible")
@@ -199,6 +202,7 @@ def lighting(h):
     led = h.backend.selectedProfile["leds"][0]
     assert led["mode"] == 3 and led["color"].lower() == "#33aaff"
     assert led["effectDuration"] == 2000
+    assert h.backend._transport.calls == writes_before_editor, "OK only stages lighting"
     h.click("resetButton")
     assert h.backend.selectedProfile["leds"][0] == original
     h.click("ledAssignment0")
@@ -206,6 +210,7 @@ def lighting(h):
     h.click("ledSave")
     h.click("applyButton")
     h.idle()
+    assert len(h.backend._transport.calls) > len(writes_before_editor)
     assert not h.backend.dirty and not h.backend.error
     assert h.backend.selectedProfile["leds"][0]["color"].lower() == "#33aaff"
     h.select_device("G600")

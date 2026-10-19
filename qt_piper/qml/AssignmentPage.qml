@@ -191,7 +191,7 @@ Pane {
     function load(button, capturedContext) {
         loading=true; mapping=button; buttonIndex=button.index; mappingContext=capturedContext || backendObject.captureMappingContext(button.index); applyError=""; recordingError=""; 
         types=["none","button","key","special","macro"].filter(function(t) { return (button.actionTypes || []).indexOf(t) >= 0 });
-        let labels={none:"Disabled",button:"Mouse button",key:"Keyboard key",special:"Special action",macro:"Macro / key combination"};
+        let labels={none:"Disabled",button:"Mouse button",key:"Keyboard key",special:"Special action",macro:dialog.chordOnly ? "Keyboard shortcut" : "Macro"};
         typeLabels=types.map(function(t) { return labels[t] });
         let t=types.indexOf(button.actionType); actionType.currentIndex=Math.max(0,t);
         mouseButton.value=button.actionType === "button" ? Number(button.actionValue) : 1;
@@ -272,6 +272,21 @@ Pane {
                     model:dialog.typeLabels
                 }
             }
+            Label {
+                objectName: "assignmentSequenceSummary"
+                visible: dialog.types[actionType.currentIndex]==="macro"
+                Kirigami.FormData.label: dialog.chordOnly ? "Shortcut:" : "Sequence:"
+                text: dialog.chordOnly ? dialog.macroPreview(macroJson.text) : dialog.visualEvents.length+(dialog.visualEvents.length===1 ? " event" : " events")
+                Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth
+                wrapMode: Text.WordWrap
+            }
+            Label {
+                objectName: "assignmentShortcutHint"
+                visible: dialog.types[actionType.currentIndex]==="macro" && dialog.chordOnly
+                text: "G600 shortcuts support one key with modifiers."
+                Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth
+                wrapMode: Text.WordWrap; color: Kirigami.Theme.disabledTextColor
+            }
             Item {
                 Layout.maximumWidth: visible ? Number.POSITIVE_INFINITY : 0
                 visible: dialog.types[actionType.currentIndex]==="button"
@@ -308,7 +323,7 @@ Pane {
             Label {
                 Layout.maximumWidth: visible ? Number.POSITIVE_INFINITY : 0
                 visible: dialog.types[actionType.currentIndex]==="key"
-                text: "For key combinations, choose Macro / key combination."
+                text: dialog.chordOnly ? "For key combinations, choose Keyboard shortcut." : "For key combinations, choose Macro."
                 wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.preferredWidth: mappingForm.compactControlWidth
                 color: Kirigami.Theme.disabledTextColor
             }
