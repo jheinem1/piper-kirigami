@@ -173,7 +173,6 @@ def lighting(h):
     writes_before_editor = deepcopy(h.backend._transport.calls)
     h.click("ledAssignment0")
     assert h.find("ledSave").property("text") == "OK"
-    assert h.fully_visible(h.find("ledApplyHint"))
     h.text("ledColor", "badcolor")
     assert not h.find("ledSave").isEnabled()
     assert h.find("ledValidation").property("visible")

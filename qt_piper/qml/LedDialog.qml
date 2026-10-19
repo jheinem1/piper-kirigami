@@ -96,12 +96,6 @@ Dialog {
                 Label { text: "ms" }
             }
         }
-        Label {
-            objectName: "ledApplyHint"
-            Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "OK keeps these changes; Apply on the Lighting page sends them to the mouse."
-            color: Kirigami.Theme.disabledTextColor
-        }
         Kirigami.InlineMessage { id: validation; objectName: "ledValidation"; Layout.fillWidth: true; text: dialog.inputValidation || dialog.backendValidation || dialog.colorValidationMessage; visible: dialog.visible && (dialog.inputValidation !== "" || dialog.backendValidation !== ""); type: Kirigami.MessageType.Error }
     }
     footer: DialogButtonBox {
