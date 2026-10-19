@@ -26,13 +26,29 @@ palette properties.
 
 ## Remaining settings pages
 
+Use the toolbar page title once. Remove the repeated Lighting zones, DPI stages,
+Device settings and On-device profiles headings from the content area. Keep
+Stage 1–4, field labels, zone counts and the assignment Events header because
+they identify distinct groups. The DPI group retains its accessible name, and
+the Profiles form retains its on-device scope in accessible and visible text.
+
 - **Sensitivity:** retain the native DPI-stage controls and polling-rate selector.
-  Capability restrictions and the link to Advanced are already visible.
-- **Lighting:** retain the native outlined editor and validated controls. Rename
-  its confirmation to **OK** and explain that it keeps the lighting draft; the
-  page's **Apply** sends it to the mouse. This matches the existing transaction.
+  A next proposal should improve precise entry through long supported-value
+  menus while preserving the device's allowed DPI values and steps.
+- **Lighting:** retain the native outlined editor, **OK** confirmation and
+  validation. The popup has no explanatory paragraph. OK still keeps a draft;
+  the page's **Apply** submits it. Color-picker, keyboard-confirmation and
+  effect-relevance gaps remain separate review items.
 - **Profiles:** retain the compact native form and capability-filtered controls.
+  Review pending-activation wording: Make active currently changes the displayed
+  status before Apply submits it. Selected-for-editing and active-on-device
+  states should be distinguishable.
 - **Advanced:** retain the native form and unsupported-feature explanation.
+  Review contextual help for technical settings, make generic unsupported hints
+  conditional, and clarify that polling rate is shared with Sensitivity.
+
+These remaining-page recommendations are review directions, not implemented
+redesigns. The current change removes repeated headings and preserves controls.
 
 No backend, device protocol, profile persistence or device-write scope changes.
 Native preview screenshots use deterministic demo devices, with no hardware
@@ -45,6 +61,7 @@ installation; the preview package is a local review artifact, not a release.
 - [KDE: displaying content](https://develop.kde.org/hig/displaying_content/)
 - [KDE: layout and navigation](https://develop.kde.org/hig/layout_and_nav/)
 - [KDE: text and labels](https://develop.kde.org/hig/text_and_labels/)
+- [Plasma Mouse settings: native numeric-entry and contextual-help patterns](https://raw.githubusercontent.com/KDE/plasma-desktop/master/kcms/mouse/ui/main.qml)
 
 Guidance and native previews reviewed on 2026-10-19. Detailed capture and test
 results accompany the local workshop artifact, outside the source repository.

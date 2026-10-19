@@ -659,15 +659,8 @@ ApplicationWindow {
                         Kirigami.Separator { objectName: "contentLayerSeparator"; Layout.fillWidth: true }
                     }
                     RowLayout {
-                        visible: root.page===2
-                        Layout.fillWidth: true; Layout.margins: root.page===2 ? Kirigami.Units.largeSpacing*3 : Kirigami.Units.largeSpacing
-                        Layout.leftMargin: root.page===2 ? Math.max(Kirigami.Units.largeSpacing*3, (contentPane.width-Kirigami.Units.gridUnit*56)/2) : Kirigami.Units.largeSpacing
-                        Kirigami.Heading { text: root.page===2 ? "Lighting zones" : "Button assignments"; level: 2 }
-                        Item { Layout.fillWidth: true }
-                    }
-                    RowLayout {
                         Layout.fillWidth: true; Layout.fillHeight: true; Layout.leftMargin: Kirigami.Units.largeSpacing; Layout.rightMargin: Kirigami.Units.largeSpacing
-                        Layout.topMargin: root.page===1 ? Kirigami.Units.largeSpacing*2 : 0
+                        Layout.topMargin: root.page===1 ? Kirigami.Units.largeSpacing*2 : Kirigami.Units.largeSpacing
                         Layout.maximumWidth: root.page===2 ? Kirigami.Units.gridUnit*56 : Number.POSITIVE_INFINITY
                         Layout.alignment: Qt.AlignHCenter
                         spacing: root.page===2 ? Kirigami.Units.largeSpacing*3 : Kirigami.Units.largeSpacing
@@ -858,7 +851,6 @@ ApplicationWindow {
                         x: (settingsScroll.availableWidth-width)/2
                         spacing: Kirigami.Units.largeSpacing*2
                         Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
-                        Kirigami.Heading { text: root.page===0 ? "DPI stages" : "Device settings"; level: 2 }
                         Label {
                             Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.subtle
                             text: root.page===0 ? "Adjust pointer speed and polling rate for " + (profile.name || "this profile") + "." : "Device-specific settings for " + (profile.name || "this profile") + "."
@@ -868,6 +860,9 @@ ApplicationWindow {
                             spacing: Kirigami.Units.largeSpacing*2
                             GridLayout {
                                 id: stagesGrid
+                                objectName: "dpiStagesGroup"
+                                Accessible.role: Accessible.Grouping
+                                Accessible.name: "DPI stages"
                                 Layout.fillWidth: true
                                 columns: width>=Kirigami.Units.gridUnit*34 ? 2 : 1
                                 columnSpacing: Kirigami.Units.largeSpacing*2
@@ -986,6 +981,8 @@ ApplicationWindow {
                     id: profilesScroll
                     Connections { target: root; function onActiveFocusItemChanged() { root.revealSettingsFocus(profilesScroll) } }
                     objectName: "profilesScroll"
+                    Accessible.role: Accessible.Pane
+                    Accessible.name: "On-device profiles"
                     Layout.fillWidth: true; Layout.fillHeight: true; clip: true
                     contentWidth: availableWidth
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -994,8 +991,7 @@ ApplicationWindow {
                         x: (profilesScroll.availableWidth-width)/2
                         spacing: Kirigami.Units.largeSpacing*2
                         Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
-                        Kirigami.Heading { text: "On-device profiles"; level: 2 }
-                        Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Select a profile from the toolbar to edit its settings."; color: root.subtle }
+                        Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Select an on-device profile from the toolbar to edit its settings."; color: root.subtle }
                         Kirigami.FormLayout {
                             TextField {
                                 text: profile.name||""; objectName: "profileName"
