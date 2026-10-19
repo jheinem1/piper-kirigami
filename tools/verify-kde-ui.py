@@ -2682,6 +2682,46 @@ def scenario_value_picker(h):
     }
 
 
+def check_event_row_contrast(h):
+    """Check rendered pixels, since a correct palette can still paint stale fills."""
+    original_dark = h.desktop_style.dark
+    checked = []
+
+    def luminance(color):
+        values = [color.redF(), color.greenF(), color.blueF()]
+        linear = [
+            v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4
+            for v in values
+        ]
+        return sum(v * weight for v, weight in zip(linear, [0.2126, 0.7152, 0.0722]))
+
+    for dark in [False, True, False]:
+        h.desktop_style.setDark(dark)
+        QTest.mouseMove(
+            h.window, QPointF(h.window.width() - 20, h.window.height() - 20).toPoint()
+        )
+        h.settle(250)
+        image = h.window.grabWindow()
+        for index in range(4):
+            row = h.find("macroEventRow" + str(index))
+            label = h.find("macroEventName" + str(index))
+            point = row.mapToScene(QPointF(row.width() * 0.6, row.height() / 2))
+            dpr = h.window.devicePixelRatio()
+            background = image.pixelColor(
+                round(point.x() * dpr), round(point.y() * dpr)
+            )
+            foreground = label.property("color")
+            a, b = sorted([luminance(background), luminance(foreground)])
+            ratio = (b + 0.05) / (a + 0.05)
+            checked.append(
+                {"dark": dark, "row": index, "background": background.name(),
+                 "foreground": foreground.name(), "contrast": round(ratio, 2)}
+            )
+            assert ratio >= 4.5, checked[-1]
+    h.desktop_style.setDark(original_dark)
+    return checked
+
+
 def scenario_visual_events(h):
     h.select_device("Capability")
     h.edit_target(0)
@@ -2771,6 +2811,7 @@ def scenario_visual_events(h):
     h.edit_row(29)
     assert h.find("mappingType").property("currentText") == "Keyboard shortcut"
     assert h.find("assignmentSequenceSummary").property("text") == "Left Shift + 1"
+    contrast = check_event_row_contrast(h)
     h.click("macroEventRemove0")
     assert h.find("assignmentSequenceSummary").property("text") == "1"
     assert not h.find("applyButton").isEnabled()
@@ -2809,6 +2850,7 @@ def scenario_visual_events(h):
         "g600_complete_key_choice_count": 135,
         "reserved_zero_not_selectable": True,
         "explicit_scoped_writes": 1,
+        "event_rows_contrast_after_palette_change": contrast,
     }
 
 

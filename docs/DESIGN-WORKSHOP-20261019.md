@@ -18,6 +18,12 @@ readable summary, such as **Left Shift + 1**, above the detailed events. A short
 hint explains the one-key-with-modifiers restriction. Other devices retain
 **Macro** and show the event count. Validation and the event payload are unchanged.
 
+Packaged-runtime review also caught stale pale alternating-row fills after a
+light-to-dark transition, despite correct palette values. Keep the native row
+hover and focus painting without alternate fills. Verify actual background
+pixels against text colors after palette transitions, rather than checking only
+palette properties.
+
 ## Remaining settings pages
 
 - **Sensitivity:** retain the native DPI-stage controls and polling-rate selector.

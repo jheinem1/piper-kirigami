@@ -138,3 +138,6 @@ def test_native_kde_ui(scenario, tmp_path):
         assert result["g600_complete_key_choice_count"] == 135
         assert result["reserved_zero_not_selectable"]
         assert result["explicit_scoped_writes"] == 1
+        contrast = result["event_rows_contrast_after_palette_change"]
+        assert len(contrast) == 12
+        assert all(row["contrast"] >= 4.5 for row in contrast)

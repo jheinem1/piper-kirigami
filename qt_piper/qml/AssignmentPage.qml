@@ -401,7 +401,8 @@ Pane {
                                     objectName:"macroEventRow"+index
                                     focusPolicy:Qt.StrongFocus; activeFocusOnTab:true
                                     onActiveFocusChanged:if(activeFocus) eventList.positionViewAtIndex(index,ListView.Contain)
-                                    Kirigami.Theme.useAlternateBackgroundColor:true
+                                    // Native alternating fills can retain the old palette after a theme change.
+                                    // Keep the native hover/focus background without alternating row fills.
                                     width:eventList.width
                                     topPadding:0; bottomPadding:0
                                     leftPadding:Kirigami.Units.smallSpacing; rightPadding:Kirigami.Units.smallSpacing
