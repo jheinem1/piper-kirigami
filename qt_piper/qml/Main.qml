@@ -6,7 +6,7 @@ import org.kde.kirigami as Kirigami
 ApplicationWindow {
     id: root
     objectName: "piperWindow"
-    width: 1400; height: 820
+    width: 1050; height: 700
     minimumWidth: 960; minimumHeight: 700
     visible: true; title: "Piper"
     readonly property bool darkMode: desktopStyle.dark
@@ -536,7 +536,24 @@ ApplicationWindow {
         Item {
             objectName: "paneDivider"
             Layout.fillHeight: true; Layout.preferredWidth: 1
-            Kirigami.Separator { width: parent.width; y: root.paneHeaderHeight; height: parent.height-y }
+            // Continue the header palette through the gap between its two panes.
+            // The inset toolbar rule must not join the content divider below it.
+            Rectangle {
+                objectName: "paneHeaderBridge"
+                width: parent.width; height: root.paneHeaderHeight
+                Kirigami.Theme.inherit: false
+                Kirigami.Theme.colorSet: Kirigami.Theme.Header
+                color: Kirigami.Theme.backgroundColor
+                ToolSeparator {
+                    objectName: "paneToolbarSeparator"
+                    anchors.centerIn: parent
+                    orientation: Qt.Vertical
+                    width: parent.width
+                    height: Math.max(0, parent.height-Kirigami.Units.largeSpacing*2)
+                    padding: 0
+                }
+            }
+            Kirigami.Separator { objectName: "paneContentSeparator"; width: parent.width; y: root.paneHeaderHeight; height: parent.height-y }
         }
         Item {
             Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumWidth: 0
