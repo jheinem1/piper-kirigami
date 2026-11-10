@@ -1182,7 +1182,7 @@ class Backend(QObject):
     mappingApplyFinished = Signal(str, bool, str)
     mappingsApplyFinished = Signal(str, str, bool, str)
     pageApplyFinished = Signal(str, bool, str)
-    _result = Signal(str, bool, object)
+    _result = Signal(str, bool, object, int)
     _transport_event = Signal(str)
 
     def __init__(
@@ -1200,6 +1200,7 @@ class Backend(QObject):
         self._device_index = -1
         self._profile_index = -1
         self._connected = False
+        self._connection_generation = 0
         self._busy = False
         self._error = ""
         self._status = "Starting demo" if self._mock else "Connecting to ratbagd"
@@ -1229,6 +1230,13 @@ class Backend(QObject):
         self._refresh_timer.setSingleShot(True)
         self._refresh_timer.setInterval(150)
         self._refresh_timer.timeout.connect(self.refresh)
+        # ratbagd intentionally exits after 20 idle minutes. A new read
+        # activates it again; waiting only for NameOwnerChanged cannot do so.
+        # Retry snapshots, never Apply, and back off if activation fails.
+        self._reconnect_delay = 1000
+        self._reconnect_timer = QTimer(self)
+        self._reconnect_timer.setSingleShot(True)
+        self._reconnect_timer.timeout.connect(self.refresh)
         if autostart:
             QTimer.singleShot(0, self.refresh)
 
@@ -2177,19 +2185,33 @@ class Backend(QObject):
 
     def _start(self, name, coroutine):
         self._busy = True
+        generation = self._connection_generation
         self.changed.emit()
         self._runner.submit(
-            coroutine, lambda ok, result: self._result.emit(name, ok, result)
+            coroutine,
+            lambda ok, result: self._result.emit(name, ok, result, generation),
         )
 
     @Slot()
     def refresh(self):
         if self._closed:
             return
+        self._reconnect_timer.stop()
         if self._busy:
             self._refresh_queued = True
             return
         self._start("refresh", self._transport.snapshot())
+
+    def _schedule_reconnect(self):
+        if (
+            self._closed
+            or self._mock
+            or self._connected
+            or self._reconnect_timer.isActive()
+        ):
+            return
+        self._reconnect_timer.start(self._reconnect_delay)
+        self._reconnect_delay = min(self._reconnect_delay * 2, 30000)
 
     @Slot()
     def apply(self):
@@ -2247,11 +2269,20 @@ class Backend(QObject):
             ),
         )
 
-    @Slot(str, bool, object)
-    def _on_result(self, operation, success, result):
+    @Slot(str, bool, object, int)
+    def _on_result(self, operation, success, result, generation):
         if self._closed:
             return
         self._busy = False
+        if success and generation != self._connection_generation:
+            # A reply may already be queued when a newer owner/bus loss is
+            # delivered. It cannot prove the service is still connected or
+            # cancel recovery. An interrupted Apply remains conservatively
+            # partial; only a fresh read is retried.
+            success = False
+            result = RatbagError(
+                "ratbagd disconnected before the operation completed. Unapplied changes are retained."
+            )
         mapping_context = (
             self._mapping_apply_context if operation == "apply-mapping" else None
         )
@@ -2295,7 +2326,11 @@ class Backend(QObject):
                     else str(result)
                 )
                 self._status = "Disconnected"
+                self._schedule_reconnect()
         else:
+            reconnecting = not self._connected
+            self._reconnect_timer.stop()
+            self._reconnect_delay = 1000
             device_path, profile_path = self._device().get("path"), self._profile().get(
                 "path"
             )
@@ -2308,6 +2343,17 @@ class Backend(QObject):
             self._latest = deepcopy(result)
             was_dirty = self.dirty
             self._connected = True
+            if reconnecting:
+                # A successful read must also clear a stale Disconnected
+                # status when local edits or a partial Apply are retained.
+                if self._partial_apply:
+                    self._status = "Apply failed; edits retained"
+                    self._error = "Reconnected to ratbagd. Some settings may be staged. Review and retry Apply before discarding edits."
+                else:
+                    self._status = (
+                        "Unapplied changes" if was_dirty else "Connected to ratbagd"
+                    )
+                    self._error = ""
             if page_context:
                 field_scope = operation_fields(self._page_apply_operations, self._draft)
                 desired = deepcopy(self._draft)
@@ -2476,11 +2522,17 @@ class Backend(QObject):
         if self._closed:
             return
         if event == "disconnected":
+            self._connection_generation += 1
             self._mapping_contexts.clear()
             self._page_contexts.clear()
             self._connected = False
-            self._error = "ratbagd disconnected. Unapplied changes are retained until you reconnect or discard them."
+            self._error = (
+                "Demo device disconnected. Unapplied changes are retained."
+                if self._mock
+                else "ratbagd disconnected. Reconnecting automatically; unapplied changes are retained."
+            )
             self._status = "Disconnected"
+            self._schedule_reconnect()
             self.changed.emit()
         else:
             if event == "resync":
@@ -2514,6 +2566,7 @@ class Backend(QObject):
         if not self._closed:
             self._closed = True
             self._refresh_timer.stop()
+            self._reconnect_timer.stop()
             self._runner.close(self._transport)
 
 

@@ -228,3 +228,63 @@ def test_mock_disconnect_stays_manual_and_recovery_updates_dirty_status(app):
         assert not backend.error
     finally:
         backend.close()
+
+
+def test_old_snapshot_cannot_cancel_a_newer_disconnect(app):
+    class DisconnectDuringSnapshot(RecoverableTransport):
+        lose_connection = False
+
+        async def snapshot(self):
+            snapshot = await super().snapshot()
+            if self.lose_connection:
+                self.lose_connection = False
+                self.available = False
+                self.on_event("disconnected")
+            return snapshot
+
+    transport = DisconnectDuringSnapshot()
+    backend = Backend(transport=transport)
+    try:
+        wait_for(app, lambda: backend.connected and not backend.busy)
+        transport.lose_connection = True
+        backend.refresh()
+        wait_for(app, lambda: transport.reads == 2 and not backend.busy)
+        assert not backend.connected
+        assert backend._reconnect_timer.isActive()
+        transport.available = True
+        backend._reconnect_timer.start(1)
+        wait_for(app, lambda: backend.connected and not backend.busy)
+        assert transport.reads == 3
+    finally:
+        backend.close()
+
+
+def test_old_apply_result_cannot_cancel_disconnect_or_replay_writes(app):
+    class DisconnectDuringApply(RecoverableTransport):
+        writes = 0
+
+        async def apply(self, operations):
+            self.writes += 1
+            snapshot = await self.fixture.apply(operations)
+            self.available = False
+            self.on_event("disconnected")
+            return snapshot
+
+    transport = DisconnectDuringApply()
+    backend = Backend(transport=transport)
+    try:
+        wait_for(app, lambda: backend.connected and not backend.busy)
+        assert backend.setReportRate(500)
+        backend.apply()
+        wait_for(app, lambda: not backend.busy)
+        assert not backend.connected
+        assert backend._partial_apply
+        assert backend.commitState == "failed"
+        assert backend._reconnect_timer.isActive()
+        transport.available = True
+        backend._reconnect_timer.start(1)
+        wait_for(app, lambda: backend.connected and not backend.busy)
+        assert backend._partial_apply
+        assert transport.writes == 1
+    finally:
+        backend.close()
