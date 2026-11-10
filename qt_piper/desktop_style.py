@@ -11,6 +11,7 @@ from PySide6.QtCore import (
     QStandardPaths,
     Signal,
     Slot,
+    qVersion,
 )
 from PySide6.QtGui import QColor, QIcon, QPalette
 from PySide6.QtQuickControls2 import QQuickStyle
@@ -87,6 +88,16 @@ class DesktopStyle(QObject):
     def previewMode(self):
         """Stock Breeze overrides are reserved for explicit design previews."""
         return self._preview_mode
+
+    @Property(str, constant=True)
+    def qtVersion(self):
+        return qVersion()
+
+    @Property(str, constant=True)
+    def pysideVersion(self):
+        from PySide6 import __version__
+
+        return __version__
 
     @Property(str, constant=True)
     def name(self):

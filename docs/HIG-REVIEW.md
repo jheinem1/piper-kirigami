@@ -9,7 +9,7 @@ This is a focused review of the prototype, not certification of complete HIG or 
 - Normal production startup preserves the platform font, style and palette. Explicit preview overrides remain available. An isolated test verifies preservation of a 14-point font and a changing system palette.
 - Mapping inputs, stage controls and diagram targets have descriptive accessible names. Keyboard activation includes Return and keypad Enter. Diagram actions use the normal pointer cursor.
 - Macro events use a bounded full-width view beneath the compact form, with a native InlineViewHeader and Add… action. Value selection uses a searchable native dialog; cancellation leaves drafts unchanged.
-- Assignment editing uses an in-window child page with native Kirigami.FormLayout label/control columns, content-sized assignment selectors, scrollable content and fixed scoped actions. Quick shortcut recording remains in the main assignment row.
+- Assignment editing uses an in-window child page with native Kirigami.FormLayout label/control columns, fixed-width centered assignment selectors, scrollable content and fixed scoped actions. Quick shortcut recording remains in the main assignment row.
 - A reopened named-key picker stays synchronized with its Linux keycode.
 - Dismissing an error clears its state without breaking the binding that shows later errors. LED validation messages reset correctly after previous failures.
 - Settings are staged until Apply; Reset discards drafts. Footer Help opens the working offline handbook. Closing during Apply is blocked. Unsupported factory restoration is not invented: Defaults is visibly disabled with an explanation until safe restoration is implemented.
@@ -29,7 +29,7 @@ The split System Settings-like navigation/content structure is deliberate. HIG g
 - Validation occurs on Apply in some editors; continuous validation and broader dialog/page polish remain future work.
 - Frontend Apply scopes are explicit: one child assignment, selected-profile assignment drafts, or the current settings page. ratbagd Commit remains device-wide, so concurrent external-client races cannot be eliminated by frontend scoping.
 - Existing GTK translations have not been migrated. The prototype is English-only.
-- Host KHelpCenter registration, saved-profile library/import/export, physical mouse behavior and firmware persistence are not established by this review.
+- Host KHelpCenter registration, automatic saved-profile library integration, physical mouse behavior and firmware persistence are not established by this review. Named JSON files now use strict validation and reviewed draft-only loading.
 
 ## Child-page reference patterns
 
@@ -46,3 +46,7 @@ The final searchable picker reserves one native large-spacing content inset and 
 The final event rows are intentionally immutable: their plain left labels retain type and value, while only move/remove actions remain at the right. Add… opens an outlined list picker with explicit OK/Cancel; selection is local until OK. This is the chosen interaction model, not an assertion that HIG requires immutable events.
 
 A focused review of Sensitivity, Lighting, Profiles and Advanced retained their current designs. A small Lighting defect was corrected: malformed color/duration input now produces reactive feedback and disables Save before staging. Four settings groups then passed 251 real inputs with zero QML warnings on the updated LED dialog. Wider page redesign remains separate work.
+
+## November 2026 refinement pass
+
+The menu no longer covers its trigger and closes on a second trigger click. Production has no theme toggle. About, Components and Authors follow the supplied KDE reference. Status is conveyed by the Apply/Reset enabled states instead of a redundant footer label. Sensitivity retains the sole polling control; Advanced no longer edits polling. Capability details are available from compact information buttons. Assignment fields have consistent widths, with macro lists using available space. Lighting offers the platform color dialog. Profiles shows the hardware slots and separates file names from slot names; importing requires a review and then Apply.

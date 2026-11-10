@@ -29,7 +29,7 @@ Use Python 3.10+ and distribution packages for **PySide6, Qt Quick Controls 2, Q
 ./run-qt.sh --mock --headless --screenshot preview.png
 ```
 
-Normal launches follow the KDE color scheme and custom accent, including platform palette updates. The stock Breeze Light/Dark toggle is a design-preview control available only with `--mock` or `--dark`; it cannot replace desktop colors during normal use.
+Normal launches follow the KDE color scheme and custom accent, including platform palette updates. There is no in-app theme chooser. `--mock` and `--dark` retain deterministic preview palettes for development only.
 
 `requirements-qt.txt` lists Python dependencies for controlled virtual environments; Kirigami/Breeze are system dependencies, not pip packages. `PIPER_KIRIGAMI_QML_PATH` may override the QML import path. A local `.deps` directory is optional and is not distributed.
 
@@ -76,16 +76,27 @@ The current Buttons page uses full-width Normal/G-Shift tabs, a compact assignme
 
 The dark overview at the top of this README shows the same main-page design.
 
-### Work in progress
+### Historical settings screenshots
 
-The other settings pages and assignment-editor design still need visual/UX refinement. These links document implemented behavior; they are not part of the reviewed main-page gallery:
+The following screenshots predate the 0.1.3 KDE form, color-picker and Profiles updates:
 
 - [Assignment editor](docs/screenshots/kde-direct-binding-editor.png) and [Add-event picker](docs/screenshots/kde-add-event-picker.png)
 - [Sensitivity](docs/screenshots/kde-dark-sensitivity.png), [profiles](docs/screenshots/kde-dark-profiles.png), [advanced](docs/screenshots/kde-dark-advanced.png): generic “Capability test mouse”
 - [Lighting](docs/screenshots/kde-dark-lighting.png), [lighting editor](docs/screenshots/kde-dark-lighting-editor.png): G600; brightness is unsupported
 - [Offline handbook](docs/screenshots/kde-handbook.png)
 
+## November 2026 desktop refinements
+
+- The application follows KDE's global theme and accent. The menu stays below its trigger, toggles closed on a second click, and provides About, Components and Authors tabs.
+- Device names size the toolbar selector up to an available-space limit. Assignment controls use centered fixed-width native forms; macro event lists keep their full width.
+- Lighting uses Qt's platform color dialog with an optional hex field. Dialog Cancel changes no draft; lighting still requires Apply.
+- Capability explanations use compact information buttons. Redundant footer and Sensitivity descriptions, the Advanced shortcut and duplicate polling control are removed.
+- Profiles lists actual hardware slots and supports named, versioned JSON files with validation and draft-only imports. G600 files include both normal and G-Shift assignments.
+- Piper reconnects automatically after ratbagd's natural idle exit, retaining drafts and never retrying a write automatically.
+
 ## Verification and limits
+
+The verification figures below describe the October baseline. New November evidence is recorded separately in `docs/verification/kde-profiles-20261110.md`.
 
 The sanitized source passes **126 tests plus 1,434 SVG subtests**, including **98 backend tests**, **5 handbook/recorder tests**, **1 platform-style test** and **12 packaging checks**. The backend suite uses an isolated D-Bus service and tests scoped writes, stale/conflicting contexts, G600 encoding and read-only picker validation.
 
@@ -106,7 +117,7 @@ Tests require pytest/pytest-subtests and a private `dbus-daemon`; the integratio
 
 Main Buttons Revert/Apply affects assignment drafts in the selected profile, across its Normal/G-Shift layers. A child assignment page resets/applies only its own assignment; Sensitivity, Lighting, Profiles and Advanced affect their documented settings in the selected profile. Unrelated drafts remain pending. Defaults is visible but disabled because authoritative restoration is not implemented. Its intended enablement is supported defaults plus a semantically differing current draft, never merely a dirty flag. See [Defaults scope](docs/DEFAULTS-SCOPE.md) for the documented per-assignment subset and whole-profile limitations. Published G600 preset mappings do not by themselves guarantee lossless restoration of every driver/firmware field. Switching the displayed Normal/G-Shift tab is immediate and does not change device settings.
 
-Profiles currently means existing **on-device ratbagd slots**. Saved-profile library integration, profile import/export and cross-device profile management are not implemented. The settings pages use shared native forms, compact DPI groups and capability explanations. Layouts are checked at the supported 960×700 minimum size; dirty-state actions and keyboard navigation remain available.
+Profiles shows every existing **on-device ratbagd slot**. Named JSON files can save the current draft and load into a selected compatible slot after validation and review. Import stages local changes; Apply writes them, and Reset discards them. Slot names, enabled state and active state remain unchanged by a file import. Different device models and unsupported values are rejected without partial changes. Automatic saved-profile library integration and cross-model conversion are not implemented. The settings pages use shared native forms, compact DPI groups and capability explanations. Layouts are checked at the supported 960×700 minimum size; dirty-state actions and keyboard navigation remain available.
 
 ## Upstream and licensing
 

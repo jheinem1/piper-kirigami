@@ -52,7 +52,7 @@ code { font-family: monospace; }
 <li><b>Buttons overview:</b> <b>Apply</b> submits pending button assignments for <b>only the selected profile</b>, across both Normal and G-Shift layers. <b>Revert</b> discards that same group of assignment drafts. Neither action includes DPI, lighting, other settings or other profiles.</li>
 <li><b>Sensitivity:</b> Apply/Reset covers the selected profile's DPI stages and polling rate.</li>
 <li><b>Lighting:</b> Apply/Reset covers the selected profile's lighting zones.</li>
-<li><b>Advanced:</b> Apply/Reset covers the selected profile's angle snapping, debounce and polling rate. Polling rate is the same setting shown on Sensitivity.</li>
+<li><b>Advanced:</b> Apply/Reset covers the selected profile's angle snapping and debounce. Polling rate is on Sensitivity and is not affected by Advanced Apply/Reset.</li>
 <li><b>Profiles:</b> Apply/Reset covers the selected profile's supported name/enabled settings and active-profile selection on that device.</li>
 <li><b>Defaults:</b> automatic restoration is unavailable and this action is disabled. Reset does not restore factory settings and does not undo changes already applied.</li>
 </ul>
@@ -130,33 +130,34 @@ code { font-family: monospace; }
 <li><b>Active:</b> the currently selected DPI stage. Choosing a different stage is a pending change until Apply.</li>
 <li><b>Default:</b> the stage used by the <b>Default DPI</b> button action. It does not mean restoring factory defaults.</li>
 </ul>
-<p><b>Polling rate</b>, in hertz, controls how often the device reports input. Only supported rates are offered. The polling-rate control on Advanced edits the same setting. The application does not benchmark latency or recommend a particular rate for your computer.</p>
+<p><b>Polling rate</b>, in hertz, controls how often the device reports input. Only supported rates are offered. The application does not benchmark latency or recommend a particular rate for your computer.</p>
 
 <h2 id="lighting"><a name="lighting"></a>7. Lighting</h2>
 <p>Open <b>Lighting</b> and click a lighting zone in the diagram or list. Unlike button diagram selection, selecting a lighting target opens its editor directly.</p>
 <ul>
 <li><b>Effect:</b> choose from the supported effects, such as Off, Solid, Cycle or Breathing.</li>
-<li><b>Color:</b> enter a six-digit RGB value in <code>#RRGGBB</code> form, for example <code>#00aaff</code>. The swatch previews that value.</li>
+<li><b>Color:</b> choose the color swatch button to open the platform color picker, or enter a six-digit RGB value in <code>#RRGGBB</code> form. Canceling the picker keeps the previous color. OK in the picker updates only the lighting editor until you confirm that editor.</li>
 <li><b>Brightness:</b> adjust the level if the driver supports it.</li>
 <li><b>Effect duration:</b> specify milliseconds for effects that use timing. Its visible effect depends on the selected mode and device.</li>
 </ul>
 <p>Unsupported color or brightness controls are disabled. OK in the lighting editor keeps the draft; Apply sends it to ratbagd. The on-screen swatch is not evidence that the physical LEDs changed.</p>
 
 <h2 id="profiles"><a name="profiles"></a>8. On-device profiles</h2>
-<p>The Profile menu chooses which existing on-device ratbagd slot you are editing. This is distinct from making that profile active on the mouse.</p>
+<p>The Profiles page lists all existing on-device ratbagd slots. Select a slot there or use the toolbar Profile selector to edit it. Selecting a slot is distinct from making it active on the mouse.</p>
 <p>On the <b>Profiles</b> page:</p>
 <ul>
 <li><b>Name:</b> edit the name where renaming is supported.</li>
 <li><b>Enabled:</b> include or exclude a profile where supported. An active profile cannot be disabled; activate another enabled profile first.</li>
 <li><b>Make active:</b> stage the selected profile as the active hardware profile. Use Apply to submit that change.</li>
 </ul>
-<p><b>No saved-profile library:</b> this release manages only the device's existing slots. It does not create a separate collection of profiles on disk, import or export profiles, copy them between devices, or integrate with the separate JamesOS saved-profile library. Closing the app discards unapplied local drafts rather than saving them as reusable profiles.</p>
+<p><b>Named JSON profile files:</b> enter a file profile name and choose <b>Save to File…</b> to export the selected slot's current settings, including pending edits. The file name is independent of the hardware slot's name. The export contains supported DPI stages, polling rate, button assignments (including both G600 layers), lighting and advanced settings.</p>
+<p>Choose <b>Load from File…</b>, review the file name and destination slot, then choose <b>Load as pending changes</b>. Loading replaces those settings in only the selected slot's local draft, including any earlier pending edits to those settings. It does not rename, enable or activate the hardware slot. Nothing is written to the mouse until <b>Apply</b>. Profiles Apply and Reset cover the loaded settings as well as normal slot-management changes. Other slots remain untouched.</p>
+<p>Files must match the device model and the target slot's supported capabilities. Malformed files, unknown versions, missing fields and unsupported values are rejected as a whole. Export also refuses settings that cannot be represented safely rather than silently losing information. Automatic integration with the separate JamesOS saved-profile library and cross-model conversion are not provided.</p>
 
 <h2 id="advanced"><a name="advanced"></a>9. Advanced settings</h2>
 <ul>
 <li><b>Angle snapping:</b> driver-supported correction that can make near-straight pointer movement straighter. It may be unsuitable when you want uncorrected movement.</li>
 <li><b>Debounce time:</b> the supported interval, in milliseconds, used to filter repeated switch transitions. Available values come from the driver.</li>
-<li><b>Polling rate:</b> the same profile setting shown on Sensitivity.</li>
 </ul>
 <p>Unavailable settings show an explanation. Changing these controls creates a draft and does not bypass Apply.</p>
 
@@ -173,7 +174,7 @@ code { font-family: monospace; }
 <li><b>Ctrl+F in the handbook:</b> focus its text search; Enter or F3 finds the next match and Shift+F3 finds the previous match.</li>
 <li><b>Esc in the handbook:</b> close the handbook and return to the application.</li>
 </ul>
-<p>The application menu also provides device refresh and Breeze Light/Breeze Dark. The handbook uses native Qt controls and the application's palette.</p>
+<p>The application menu also provides device refresh and <b>About Piper Kirigami</b>, with About, Components and Authors tabs. The application follows KDE’s global theme and accent; there is no in-app theme chooser. The handbook uses native Qt controls and the application's palette.</p>
 
 <h2 id="troubleshooting"><a name="troubleshooting"></a>11. Troubleshooting</h2>
 <h3>No connected device or service error</h3>

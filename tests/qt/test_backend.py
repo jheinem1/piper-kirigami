@@ -1086,7 +1086,7 @@ def test_main_assignment_revert_leaves_every_other_scope(backend):
     [
         ("sensitivity", {"Resolution", "ReportRate"}),
         ("lighting", {"Color"}),
-        ("advanced", {"AngleSnapping", "Debounce", "ReportRate"}),
+        ("advanced", {"AngleSnapping", "Debounce"}),
         ("profiles", {"Name"}),
     ],
 )
@@ -1119,6 +1119,10 @@ def test_page_apply_isolation(backend, app, scope, expected_members):
         assert backend.selectedProfile["resolutions"][0]["y"] == 1600
         assert backend.selectedProfile["leds"][0]["color"] == "#123456"
         assert backend.selectedProfile["debounce"] == 8
+    if scope == "advanced":
+        assert backend.selectedProfile["reportRate"] == 500
+        assert backend.pageDirty(backend.capturePageContext("sensitivity"))
+        assert backend._base[1]["profiles"][0]["reportRate"] != 500
 
 
 @pytest.mark.parametrize("scope", ["sensitivity", "lighting", "advanced", "profiles"])
@@ -1136,6 +1140,23 @@ def test_page_reset_isolation(backend, scope):
     assert not backend.pageDirty(context)
     assert backend.profileMappingsDirty and backend.dirty
     assert backend.selectedProfile["buttons"][1]["actionValue"] == 30
+    assert not backend._transport.calls
+    if scope == "advanced":
+        assert backend.selectedProfile["reportRate"] == 500
+        assert backend.pageDirty(backend.capturePageContext("sensitivity"))
+
+
+def test_advanced_noop_preserves_sensitivity_polling_draft(backend):
+    backend.selectDevice(1)
+    backend.setReportRate(500)
+    advanced = backend.capturePageContext("advanced")
+    sensitivity = backend.capturePageContext("sensitivity")
+    assert not backend.pageDirty(advanced)
+    assert backend.pageDirty(sensitivity)
+    assert backend.applyPage(advanced)
+    assert backend.resetPage(advanced)
+    assert backend.selectedProfile["reportRate"] == 500
+    assert backend.pageDirty(sensitivity)
     assert not backend._transport.calls
 
 

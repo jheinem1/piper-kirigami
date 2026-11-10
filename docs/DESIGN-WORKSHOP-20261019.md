@@ -45,7 +45,7 @@ the Profiles form retains its on-device scope in accessible and visible text.
   states should be distinguishable.
 - **Advanced:** retain the native form and unsupported-feature explanation.
   Review contextual help for technical settings, make generic unsupported hints
-  conditional, and clarify that polling rate is shared with Sensitivity.
+  conditional. Polling rate is available only on Sensitivity.
 
 These remaining-page recommendations are review directions, not implemented
 redesigns. The current change removes repeated headings and preserves controls.

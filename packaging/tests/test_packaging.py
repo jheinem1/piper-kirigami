@@ -135,15 +135,23 @@ class FlatpakTests(unittest.TestCase):
     def test_runtime_probe_rejects_qt_patch_mismatch(self):
         # Execute the version guard from the actual probe without importing Qt.
         from types import SimpleNamespace
+
         tree = ast.parse((self.directory / "check-runtime.py").read_text())
         guards = [node for node in tree.body if isinstance(node, ast.Assert)][:3]
-        check = compile(ast.Module(body=guards, type_ignores=[]), "runtime-version-guards", "exec")
+        check = compile(
+            ast.Module(body=guards, type_ignores=[]), "runtime-version-guards", "exec"
+        )
+
         def validate(pyside, qt, shiboken):
-            exec(check, {
-                "PySide6": SimpleNamespace(__version__=pyside),
-                "QtCore": SimpleNamespace(qVersion=lambda: qt),
-                "shiboken6": SimpleNamespace(__version__=shiboken),
-            })
+            exec(
+                check,
+                {
+                    "PySide6": SimpleNamespace(__version__=pyside),
+                    "QtCore": SimpleNamespace(qVersion=lambda: qt),
+                    "shiboken6": SimpleNamespace(__version__=shiboken),
+                },
+            )
+
         validate("6.11.3", "6.11.3", "6.11.3")
         with self.assertRaisesRegex(AssertionError, "patch versions"):
             validate("6.11.2", "6.11.3", "6.11.2")
@@ -183,8 +191,11 @@ class FlatpakTests(unittest.TestCase):
         module = json.loads((self.directory / "dbus-test-daemon.json").read_text())
         self.assertIn("dbus-test-daemon.json", self.manifest["modules"])
         self.assertEqual(module["cleanup"], ["*"])
-        source, = module["sources"]
-        self.assertEqual(source["url"], "https://dbus.freedesktop.org/releases/dbus/dbus-1.16.2.tar.xz")
+        (source,) = module["sources"]
+        self.assertEqual(
+            source["url"],
+            "https://dbus.freedesktop.org/releases/dbus/dbus-1.16.2.tar.xz",
+        )
         self.assertRegex(source["sha256"], r"^[0-9a-f]{64}$")
         self.assertIn("/app/test-tools/bin/dbus-daemon", module["build-commands"][-1])
         commands = "\n".join(self.manifest["modules"][-1]["build-commands"])
@@ -194,12 +205,30 @@ class FlatpakTests(unittest.TestCase):
         commands = "\n".join(self.manifest["modules"][-1]["build-commands"])
         for test in (
             "test_backend.py",
+            "test_reconnect.py",
+            "test_profile_files.py",
+            "test_profile_files_ui.py",
+            "test_native_forms.py",
             "test_qt_diagrams.py",
             "test_kde_ui.py",
             "test_handbook.py",
         ):
             self.assertIn(test, commands)
         self.assertIn("piper-kirigami --mock --headless --screenshot", commands)
+
+
+class ApplicationMetadataTests(unittest.TestCase):
+    def test_about_version_matches_package_version(self):
+        namespace = {}
+        exec((ROOT / "qt_piper/__init__.py").read_text(), namespace)
+        package_version = (
+            (ROOT / "qt-build/meson.build")
+            .read_text()
+            .split("version: '", 1)[1]
+            .split("'", 1)[0]
+        )
+        self.assertEqual(namespace["__version__"], package_version)
+        self.assertTrue((ROOT / "qt_piper/assets/piper.svg").is_file())
 
 
 class ScriptTests(unittest.TestCase):

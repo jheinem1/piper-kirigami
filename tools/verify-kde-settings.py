@@ -45,13 +45,13 @@ def capture_pages(h):
                     (
                         "sensitivity",
                         "sensitivityTab",
-                        ["dpiX0", "dpiX3", "reportRate", "advancedSettingsLink"],
+                        ["dpiX0", "dpiX3", "reportRate"],
                     ),
                     ("profiles", "profileTab", ["profileName", "profileEnabled"]),
                     (
                         "advanced",
                         "advancedTab",
-                        ["angleSnapping", "debounce", "advancedReportRate"],
+                        ["angleSnapping", "debounce"],
                     ),
                     ("lighting", "lightingTab", ["ledAssignment0", "diagramArea"]),
                 ]:
@@ -95,10 +95,9 @@ def sensitivity(h):
     assert not h.backend.selectedProfile["resolutions"][3]["enabled"]
     h.combo("reportRate", 1)
     assert h.backend.selectedProfile["reportRate"] == 250
-    h.focus_with_tab("advancedSettingsLink")
-    assert h.fully_visible(
-        h.find("advancedSettingsLink")
-    ), "Focused settings action is clipped"
+    assert h.window.findChild(kde.original_ui.QObject, "advancedSettingsLink") is None
+    h.focus_with_tab("reportRate")
+    assert h.fully_visible(h.find("reportRate")), "Focused settings control is clipped"
     h.capture("narrow-sensitivity-pending")
     h.click("resetButton")
     assert h.backend.selectedProfile == original
@@ -117,25 +116,43 @@ def sensitivity(h):
 
 def advanced(h):
     h.select_device("Capability")
-    h.click("advancedTab")
+    h.click("sensitivityTab")
+    original_rate = h.backend.selectedProfile["reportRate"]
+    h.combo("reportRate", 2)
+    assert h.backend.selectedProfile["reportRate"] == 500
+    h.focus_with_tab("advancedTab")
+    h.key(Qt.Key.Key_Return)
+    assert h.window.property("page") == 3
+    assert h.window.findChild(kde.original_ui.QObject, "advancedReportRate") is None
+    assert not h.find("applyButton").isEnabled()
+    assert not h.find("resetButton").isEnabled()
     original = deepcopy(h.backend.selectedProfile)
     h.click("angleSnapping")
     h.combo("debounce", 2)
-    h.combo("advancedReportRate", 2)
     assert h.backend.selectedProfile["angleSnapping"] == 1
     assert h.backend.selectedProfile["debounce"] == 8
     assert h.backend.selectedProfile["reportRate"] == 500
     h.click("resetButton")
     assert h.backend.selectedProfile == original
     h.click("angleSnapping")
+    writes_before = len(h.backend._transport.calls)
     h.click("applyButton")
     h.idle()
-    assert not h.backend.dirty and not h.backend.error
+    assert h.backend.dirty and not h.backend.error
     assert h.backend.selectedProfile["angleSnapping"] == 1
+    assert h.backend.selectedProfile["reportRate"] == 500
+    assert {op.member for op in h.backend._transport.calls[writes_before:]} == {
+        "AngleSnapping"
+    }
+    h.click("sensitivityTab")
+    assert h.find("applyButton").isEnabled()
+    h.click("resetButton")
+    assert h.backend.selectedProfile["reportRate"] == original_rate
+    assert not h.backend.dirty
+    h.click("advancedTab")
     h.select_device("G600")
     assert not h.find("angleSnapping").isEnabled()
     assert not h.find("debounce").isEnabled()
-    assert h.find("advancedReportRate").isEnabled()
 
 
 def profiles(h):

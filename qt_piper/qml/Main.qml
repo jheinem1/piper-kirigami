@@ -127,7 +127,9 @@ ApplicationWindow {
     function refreshSettingsPageContext() {
         if(pageScope!=="" && backend.connected && !backend.busy && profile.path) settingsPageContext=backend.capturePageContext(pageScope);
     }
-    onPageChanged: refreshSettingsPageContext()
+    // pageScope is a derived binding and may still hold the old value during
+    // pageChanged. Capture only after the scope itself has changed.
+    onPageScopeChanged: refreshSettingsPageContext()
     readonly property string pageTitle: ["Sensitivity", "Buttons", "Lighting", "Advanced", "Profiles"][page]
     readonly property var navigationItems: [
         {name: "buttonsTab", title: "Buttons", icon: "input-mouse", page: 1},
@@ -384,13 +386,23 @@ ApplicationWindow {
                         Keys.onEscapePressed: contentPane.forceActiveFocus(Qt.OtherFocusReason)
                     }
                     ToolButton {
-                        objectName: "appMenuButton"; icon.name: "application-menu"; text: "Menu"; display: AbstractButton.IconOnly
-                        onClicked: appMenu.open(); ToolTip.text: "Menu"; ToolTip.visible: hovered
-                        Menu { id: appMenu
-                            MenuItem { text: root.darkMode ? "Breeze Light" : "Breeze Dark"; objectName: "themeToggle"; icon.name: "preferences-desktop-theme-global"; onTriggered: desktopStyle.setDark(!desktopStyle.dark) }
+                        id: appMenuControl
+                        objectName: "appMenuButton"; icon.name: "application-menu"; text: "Show Menu"; display: AbstractButton.IconOnly
+                        Accessible.name: appMenu.opened ? "Hide Menu" : "Show Menu"
+                        onClicked: appMenu.visible ? appMenu.close() : appMenu.open()
+                        ToolTip.text: appMenu.visible ? "Hide Menu" : "Show Menu"; ToolTip.visible: hovered && !appMenu.visible
+                        Menu {
+                            id: appMenu
+                            objectName: "appMenu"
+                            y: appMenuControl.height
+                            // Keep the trigger outside the popup and let a second
+                            // press reach it instead of closing and reopening.
+                            modal: false
+                            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
                             MenuItem { text: "Refresh devices"; icon.name: "view-refresh"; enabled: !backend.dirty && !backend.busy; onTriggered: backend.refresh() }
                             MenuSeparator {}
                             MenuItem { objectName: "handbookMenuItem"; action: handbookAction }
+                            MenuItem { objectName: "aboutMenuItem"; text: "About Piper Kirigami"; icon.name: "help-about"; onTriggered: aboutDialog.open() }
                         }
                     }
                     }
@@ -573,9 +585,12 @@ ApplicationWindow {
                     minimumHeight: root.paneHeaderHeight; preferredHeight: minimumHeight; maximumHeight: minimumHeight; height: minimumHeight
                     leftPadding: Kirigami.Units.largeSpacing*2; rightPadding: Kirigami.Units.largeSpacing
                     RowLayout {
+                        id: sectionHeaderControls
+                        objectName: "sectionHeaderControls"
                         width: parent.width
                         spacing: Kirigami.Units.mediumSpacing
                     ToolButton {
+                        id: assignmentBackControl
                         objectName: "assignmentBack"
                         visible: root.assignmentEditing
                         icon.name: "go-previous"
@@ -584,11 +599,34 @@ ApplicationWindow {
                         onClicked: root.returnToAssignments()
                         ToolTip.visible: hovered; ToolTip.text: "Back to button assignments"
                     }
-                    Kirigami.Heading { objectName: "sectionTitle"; text: root.assignmentEditing ? root.assignmentTitle : root.pageTitle; level: 2 }
+                    Kirigami.Heading { id: sectionTitle; objectName: "sectionTitle"; text: root.assignmentEditing ? root.assignmentTitle : root.pageTitle; level: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.maximumWidth: implicitWidth+Kirigami.Units.smallSpacing; elide: Text.ElideRight }
                     Item { Layout.fillWidth: true; Layout.minimumWidth: 0 }
-                    Label { text: "Device:" }
-                    NativeComboBox { id: deviceSelector; objectName: "deviceSelect"; flat: true; Accessible.name: "Device"; model: backend.devices; textRole: "name"; currentIndex: backend.selectedDeviceIndex; Layout.preferredWidth: modulePane.width<800 ? 210 : 270; onActivated: { let target=currentIndex; root.requestNavigation(function() { backend.selectDevice(target); root.clearSelection(); root.shifted=false; }); } }
-                    Label { text: "Profile:" }
+                    Label { id: deviceLabel; objectName: "deviceLabel"; text: "Device:" }
+                    NativeComboBox {
+                        id: deviceSelector
+                        objectName: "deviceSelect"
+                        flat: true
+                        Accessible.name: "Device"
+                        model: backend.devices
+                        textRole: "name"
+                        currentIndex: backend.selectedDeviceIndex
+                        // The desktop style measures every device name and adds
+                        // its native frame/arrow. Keep that natural width instead
+                        // of squeezing G600 into a fixed 210px box. Exceptionally
+                        // long names yield to the profile controls and page title.
+                        readonly property real widthBudget: Math.max(0, sectionHeaderControls.width
+                            - profileSelector.Layout.preferredWidth - deviceLabel.implicitWidth - profileLabel.implicitWidth
+                            - (assignmentBackControl.visible ? assignmentBackControl.implicitWidth : 0)
+                            - sectionHeaderControls.spacing*(assignmentBackControl.visible ? 6 : 5)
+                            - Math.min(sectionTitle.implicitWidth, Kirigami.Units.gridUnit*3))
+                        Layout.preferredWidth: Math.min(implicitWidth+Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit*22, widthBudget)
+                        Layout.minimumWidth: Layout.preferredWidth
+                        Layout.maximumWidth: Layout.preferredWidth
+                        ToolTip.text: "Select device: " + displayText
+                        ToolTip.visible: hovered
+                        onActivated: { let target=currentIndex; root.requestNavigation(function() { backend.selectDevice(target); root.clearSelection(); root.shifted=false; }); }
+                    }
+                    Label { id: profileLabel; objectName: "profileLabel"; text: "Profile:" }
                     NativeComboBox { id: profileSelector; objectName: "profileSelect"; flat: true; Accessible.name: "Profile"; model: backend.profiles; textRole: "name"; currentIndex: backend.selectedProfileIndex; Layout.preferredWidth: modulePane.width<800 ? 110 : 140; onActivated: { let target=currentIndex; root.requestNavigation(function() { backend.selectProfile(target); root.clearSelection(); }); } }
                     }
                 }
@@ -851,10 +889,6 @@ ApplicationWindow {
                         x: (settingsScroll.availableWidth-width)/2
                         spacing: Kirigami.Units.largeSpacing*2
                         Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
-                        Label {
-                            Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.subtle
-                            text: root.page===0 ? "Adjust pointer speed and polling rate for " + (profile.name || "this profile") + "." : "Device-specific settings for " + (profile.name || "this profile") + "."
-                        }
                         ColumnLayout {
                             visible: root.page===0; Layout.fillWidth: true
                             spacing: Kirigami.Units.largeSpacing*2
@@ -922,18 +956,18 @@ ApplicationWindow {
                                     objectName: "reportRate"
                                     Kirigami.FormData.label: "Polling rate:"
                                     Accessible.name: "Polling rate"
-                                    Layout.preferredWidth: Kirigami.Units.gridUnit*12
+                                    Layout.preferredWidth: Kirigami.Units.gridUnit*18
+                                    Layout.maximumWidth: Kirigami.Units.gridUnit*18
                                     model: profile.reportRates || []; enabled: count > 0
                                     currentIndex: model.indexOf(profile.reportRate)
                                     displayText: count ? currentText + " Hz" : "Not supported"
                                     onActivated: backend.setReportRate(Number(currentText))
                                 }
                             }
-                            Label {
-                                Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.subtle
-                                text: "Active is the current DPI stage. Default is the stage used by the Default DPI button action."
+                            ContextHelpButton {
+                                Layout.alignment: Qt.AlignRight
+                                helpText: "Active is the current DPI stage. Default is the stage used by the Default DPI button action."
                             }
-                            Button { text: "Advanced settings"; icon.name: "settings-configure"; objectName: "advancedSettingsLink"; onClicked: root.page=3 }
                         }
                         ColumnLayout {
                             visible: root.page===3; Layout.fillWidth: true
@@ -952,70 +986,32 @@ ApplicationWindow {
                                     objectName: "debounce"
                                     Kirigami.FormData.label: "Debounce time:"
                                     Accessible.name: "Debounce time"
-                                    Layout.preferredWidth: Kirigami.Units.gridUnit*14
+                                    Layout.preferredWidth: Kirigami.Units.gridUnit*18
+                                    Layout.maximumWidth: Kirigami.Units.gridUnit*18
                                     model: root.profile.debounces || []; enabled: count > 0
                                     currentIndex: model.indexOf(root.profile.debounce)
                                     displayText: count ? currentText + " ms" : "Not supported"
                                     onActivated: backend.setDebounce(Number(currentText))
                                 }
-                                NativeComboBox {
-                                    objectName: "advancedReportRate"
-                                    Kirigami.FormData.label: "Polling rate:"
-                                    Accessible.name: "Polling rate"
-                                    Layout.preferredWidth: Kirigami.Units.gridUnit*14
-                                    model: root.profile.reportRates || []; enabled: count > 0
-                                    currentIndex: model.indexOf(root.profile.reportRate)
-                                    displayText: count ? currentText + " Hz" : "Not supported"
-                                    onActivated: backend.setReportRate(Number(currentText))
-                                }
                             }
-                            Label {
-                                Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.subtle
-                                text: "Unavailable settings are not supported by this device’s ratbagd driver."
+                            ContextHelpButton {
+                                Layout.alignment: Qt.AlignRight
+                                helpText: "Unavailable settings are not supported by this device’s ratbagd driver."
                             }
                         }
                         Item { Layout.preferredHeight: Kirigami.Units.largeSpacing*2 }
                     }
                 }
-                ScrollView {
+                ProfilePage {
                     id: profilesScroll
+                    backendObject: backend
+                    Layout.fillWidth: true; Layout.fillHeight: true
                     Connections { target: root; function onActiveFocusItemChanged() { root.revealSettingsFocus(profilesScroll) } }
-                    objectName: "profilesScroll"
-                    Accessible.role: Accessible.Pane
-                    Accessible.name: "On-device profiles"
-                    Layout.fillWidth: true; Layout.fillHeight: true; clip: true
-                    contentWidth: availableWidth
-                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                    ColumnLayout {
-                        width: Math.min(Kirigami.Units.gridUnit*42, profilesScroll.availableWidth-Kirigami.Units.largeSpacing*6)
-                        x: (profilesScroll.availableWidth-width)/2
-                        spacing: Kirigami.Units.largeSpacing*2
-                        Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
-                        Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Select an on-device profile from the toolbar to edit its settings."; color: root.subtle }
-                        Kirigami.FormLayout {
-                            TextField {
-                                text: profile.name||""; objectName: "profileName"
-                                Kirigami.FormData.label: "Name:"
-                                Accessible.name: "Profile name"
-                                Layout.preferredWidth: Kirigami.Units.gridUnit*18
-                                enabled: profile.canRename===true
-                                onEditingFinished: if(text!==profile.name) backend.setProfileName(text)
-                            }
-                            Label { visible: profile.canRename!==true; text: "Renaming is not supported by this device."; color: root.subtle }
-                            CheckBox {
-                                text: "Enabled"; objectName: "profileEnabled"; Accessible.name: "Enable selected profile"
-                                Kirigami.FormData.label: "Profile:"
-                                checked: profile.enabled!==false; enabled: profile.canDisable===true
-                                onClicked: backend.setProfileEnabled(checked)
-                            }
-                            Label { visible: profile.canDisable!==true; text: "This device keeps all profiles enabled."; color: root.subtle }
-                            RowLayout {
-                                Kirigami.FormData.label: "Status:"
-                                Label { text: profile.active ? "Active profile" : "Inactive profile" }
-                                Button { text: "Make active"; objectName: "activateProfile"; visible: !profile.active; enabled: !profile.active; onClicked: backend.setProfileActive() }
-                            }
-                        }
-                        Item { Layout.preferredHeight: Kirigami.Units.largeSpacing*2 }
+                    onSelectSlot: function(index) {
+                        root.requestNavigation(function() {
+                            backend.selectProfile(index);
+                            root.clearSelection();
+                        });
                     }
                 }
                 Kirigami.PlaceholderMessage { text: "No connected device"; explanation: "Connect a supported mouse and make sure ratbagd is running."; helpfulAction: Kirigami.Action { text: "Refresh"; onTriggered: backend.refresh() } }
@@ -1053,17 +1049,7 @@ ApplicationWindow {
                         color: root.subtle
                     }
                     Item { Layout.fillWidth: true }
-                    Label {
-                        objectName: "pendingChangesStatus"
-                        Layout.fillWidth: true
-                        Layout.minimumWidth: 0
-                        Layout.maximumWidth: implicitWidth
-                        elide: Text.ElideRight
-                        visible: root.assignmentEditing ? assignmentPage.edited || assignmentPage.applying : root.page===1 ? backend.profileMappingsDirty || backend.busy : root.settingsPageDirty || backend.busy
-                        text: backend.busy ? "Applying changes…" : root.page===1 ? "Unsaved assignment changes" : "Unsaved changes"
-                        color: root.foreground
-                    }
-                    Button { text: "Apply"; icon.name: "dialog-ok-apply"; objectName: "applyButton"; Accessible.description: root.assignmentEditing ? "Apply only this assignment." : root.page===1 ? "Apply pending button assignments in the selected profile. Other settings are unchanged." : "Apply only pending "+root.pageTitle.toLowerCase()+" settings."; ToolTip.visible: hovered; ToolTip.text: Accessible.description; highlighted: root.assignmentEditing ? assignmentPage.edited : root.page===1 ? backend.profileMappingsDirty : root.settingsPageDirty; enabled: root.assignmentEditing ? assignmentPage.canApply : root.page===1 ? backend.profileMappingsDirty && root.quickMacroIndex<0 && !backend.busy && backend.connected : root.settingsPageDirty && !backend.busy && backend.connected; onClicked: root.assignmentEditing ? assignmentPage.applyDraft() : root.page===1 ? root.applyProfileAssignments() : backend.applyPage(root.settingsPageContext) }
+                    Button { text: "Apply"; icon.name: "dialog-ok-apply"; objectName: "applyButton"; Accessible.description: root.assignmentEditing ? "Apply only this assignment." : root.page===1 ? "Apply pending button assignments in the selected profile. Other settings are unchanged." : root.page===4 && backend.profileImportPending ? "Apply the loaded settings to this profile slot. Other slots are unchanged." : "Apply only pending "+root.pageTitle.toLowerCase()+" settings."; ToolTip.visible: hovered; ToolTip.text: Accessible.description; highlighted: root.assignmentEditing ? assignmentPage.edited : root.page===1 ? backend.profileMappingsDirty : root.settingsPageDirty; enabled: root.assignmentEditing ? assignmentPage.canApply : root.page===1 ? backend.profileMappingsDirty && root.quickMacroIndex<0 && !backend.busy && backend.connected : root.settingsPageDirty && !backend.busy && backend.connected; onClicked: root.assignmentEditing ? assignmentPage.applyDraft() : root.page===1 ? root.applyProfileAssignments() : backend.applyPage(root.settingsPageContext) }
                 }
             }
             }
@@ -1107,5 +1093,6 @@ ApplicationWindow {
         }
     }
 
+    AboutDialog { id: aboutDialog }
     LedDialog { id: ledDialog; backendObject: backend }
 }

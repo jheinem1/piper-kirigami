@@ -46,7 +46,9 @@ def test_handbook_is_standalone_and_has_valid_contents():
     assert all(link.startswith(("#", "https://")) for link in parser.links)
     for phrase in (
         "The layer selector is view-only.",
-        "No saved-profile library:",
+        "Named JSON profile files:",
+        "Load as pending changes",
+        "It does not rename, enable or activate the hardware slot.",
         "only the current assignment draft",
         "child settings page inside the main window",
         "only the selected profile",

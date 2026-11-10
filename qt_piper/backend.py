@@ -29,6 +29,7 @@ from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
 from PySide6.QtGui import QColor
 
 from .fixtures import fixture_objects
+from . import profile_files
 
 API_VERSION = 2
 SPECIAL_BASE = 1 << 30
@@ -478,16 +479,40 @@ def validate_page_scope(devices, operations, context):
         raise ScopedApplyError("Apply contains settings outside the captured page.")
 
 
+def profile_operation_key(operation):
+    return (operation.path, operation.interface, operation.member)
+
+
 def page_operation_matches(operation, context, profile):
     if operation.device != context["devicePath"]:
         return False
     scope = context["scope"]
+    if scope == "profiles" and list(profile_operation_key(operation)) in context.get(
+        "importedOperations", []
+    ):
+        # Imported content is still restricted to this exact target profile.
+        # Never use a file-supplied path or allow a neighbouring profile/device.
+        if operation.interface == "Profile":
+            return operation.path == profile["path"] and operation.member in {
+                "ReportRate",
+                "AngleSnapping",
+                "Debounce",
+            }
+        collection = {
+            "Resolution": "resolutions",
+            "Button": "buttons",
+            "Led": "leds",
+        }.get(operation.interface)
+        return bool(
+            collection
+            and any(item["path"] == operation.path for item in profile[collection])
+        )
     if operation.interface == "Profile" and operation.path == context["profilePath"]:
         return (
             operation.member
             in {
                 "sensitivity": {"ReportRate"},
-                "advanced": {"ReportRate", "AngleSnapping", "Debounce"},
+                "advanced": {"AngleSnapping", "Debounce"},
                 "profiles": {"Name", "Disabled", "SetActive"},
                 "lighting": set(),
             }[scope]
@@ -1166,6 +1191,7 @@ def edit_action(function):
         self._clear_conflicts(
             operation_fields(build_operations(before, self._draft), before)
         )
+        self._prune_profile_imports()
         self._error = ""
         self._commit_state = "staged" if self.dirty else "idle"
         self._status = "Unapplied changes" if self.dirty else "No pending changes"
@@ -1215,6 +1241,9 @@ class Backend(QObject):
         self._mapping_apply_context = None
         self._mapping_batch_contexts = []
         self._page_contexts = {}
+        self._profile_import_previews = {}
+        self._profile_import_operations = {}
+        self._profile_file_names = {}
         self._page_apply_context = None
         self._page_apply_operations = []
         self._partial_page_scope = None
@@ -1255,6 +1284,14 @@ class Backend(QObject):
     @Property("QVariantMap", notify=changed)
     def selectedProfile(self):
         return deepcopy(self._profile())
+
+    @Property(bool, notify=changed)
+    def profileImportPending(self):
+        return bool(self._profile_import_operations.get(self._profile().get("path")))
+
+    @Property(str, notify=changed)
+    def profileFileName(self):
+        return self._profile_file_names.get(self._profile().get("path"), "")
 
     @Property(int, notify=changed)
     def selectedDeviceIndex(self):
@@ -1699,6 +1736,7 @@ class Backend(QObject):
             for (_, _, button), original in zip(resolved, originals, strict=True):
                 button.clear()
                 button.update(original)
+            self._prune_profile_imports()
             self._error = ""
             self._status = "Current profile assignment edits discarded"
             self._commit_state = "staged" if self.dirty else "idle"
@@ -1897,6 +1935,7 @@ class Backend(QObject):
             before = self._find_context_button(self._base, context)[2]
             item.clear()
             item.update(deepcopy(before))
+            self._prune_profile_imports()
             self._external_conflicts = {
                 (path, name)
                 for path, name in self._external_conflicts
@@ -2001,6 +2040,151 @@ class Backend(QObject):
             elif baseline != record["baseline"]:
                 self._mapping_contexts.pop(token, None)
 
+    def _prune_profile_imports(self):
+        pending = {
+            profile_operation_key(op)
+            for op in build_operations(self._base, self._draft)
+        }
+        self._profile_import_operations = {
+            path: keys & pending
+            for path, keys in self._profile_import_operations.items()
+            if keys & pending
+        }
+
+    def _profile_scope_context(self, context):
+        context = deepcopy(context)
+        # The caller cannot broaden a scope by adding paths to a QML map.
+        context.pop("importedOperations", None)
+        if context.get("scope") == "profiles":
+            context["importedOperations"] = [
+                list(key)
+                for key in sorted(
+                    self._profile_import_operations.get(context["profilePath"], ())
+                )
+            ]
+        return context
+
+    def _profile_file_context(self, context, importing=False):
+        if self._busy:
+            raise ValueError(
+                "Wait for the current operation before using a profile file."
+            )
+        if context.get("scope") != "profiles":
+            raise ValueError("Open the Profiles page before using a profile file.")
+        profile = self._page_profile(context)
+        if importing and self._partial_apply:
+            raise ValueError(
+                "An Apply may be pending in ratbagd. Retry it or reconnect before loading a profile file."
+            )
+        return profile
+
+    @Slot(str, str, "QVariantMap", bool, result=bool)
+    def exportProfileFile(self, destination, name, context, overwrite=False):
+        try:
+            profile = self._profile_file_context(context)
+            document = profile_files.export_document(
+                self._device(), profile, name, self._set_mapping
+            )
+            profile_files.write_document(destination, document, overwrite)
+            self._error = ""
+            self._status = f"Saved {document['name']} to a profile file; device settings are unchanged"
+            self.changed.emit()
+            return True
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            OSError,
+            UnicodeError,
+            RecursionError,
+        ) as exc:
+            self._set_error(f"Could not save profile: {exc}")
+            return False
+
+    @Slot(str, "QVariantMap", result="QVariantMap")
+    def inspectProfileFile(self, source, context):
+        """Validate and freeze one preview without staging any device setting."""
+        self._profile_import_previews.clear()
+        try:
+            profile = self._profile_file_context(context, importing=True)
+            document = profile_files.read_document(source)
+            candidate = profile_files.validate_document(
+                document, self._device(), profile, self._set_mapping
+            )
+            token = uuid4().hex
+            self._profile_import_previews[token] = {
+                "context": deepcopy(context),
+                "generation": self._connection_generation,
+                "before": deepcopy(profile),
+                "candidate": candidate,
+                "name": document["name"],
+            }
+            self._error = ""
+            preview = {
+                "token": token,
+                "name": document["name"],
+                "target": profile["name"],
+                "slot": profile["index"] + 1,
+                "buttons": len(candidate["buttons"]),
+                "gshiftButtons": sum(
+                    b["layer"] == "gshift" for b in candidate["buttons"]
+                ),
+                "dpiStages": len(candidate["resolutions"]),
+                "leds": len(candidate["leds"]),
+            }
+            self.changed.emit()
+            return preview
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            OSError,
+            UnicodeError,
+            RecursionError,
+        ) as exc:
+            self._set_error(f"Could not load profile: {exc}")
+            return {}
+
+    @Slot(str)
+    def cancelProfileImport(self, token):
+        self._profile_import_previews.pop(token, None)
+
+    @Slot(str, result=bool)
+    @edit_action
+    def importProfileFile(self, token):
+        """Stage a previously reviewed immutable preview, atomically and locally."""
+        preview = self._profile_import_previews.get(token)
+        if not preview:
+            raise ValueError("This file preview expired. Choose the file again.")
+        profile = self._profile_file_context(preview["context"], importing=True)
+        if (
+            preview["generation"] != self._connection_generation
+            or profile != preview["before"]
+        ):
+            raise ValueError(
+                "The target slot changed after the file preview. Choose the file again."
+            )
+        # All validation has completed before the one draft replacement.
+        # Other profiles, device activation and names are untouched.
+        self._device()["profiles"][self._profile_index] = deepcopy(preview["candidate"])
+        paths = {profile["path"]} | {
+            item["path"]
+            for collection in ("buttons", "resolutions", "leds")
+            for item in profile[collection]
+        }
+        self._profile_import_operations[profile["path"]] = {
+            profile_operation_key(op)
+            for op in build_operations(self._base, self._draft)
+            if op.device == self._device()["path"]
+            and op.path in paths
+            and not (
+                op.interface == "Profile"
+                and op.member in {"Name", "Disabled", "SetActive"}
+            )
+        }
+        self._profile_file_names[profile["path"]] = preview["name"]
+        self._profile_import_previews.pop(token, None)
+
     @staticmethod
     def _page_identity(context):
         return tuple(context.get(key) for key in ("devicePath", "profilePath", "scope"))
@@ -2043,6 +2227,7 @@ class Backend(QObject):
     def pageDirty(self, context):
         try:
             profile = self._page_profile(context)
+            context = self._profile_scope_context(context)
             return any(
                 page_operation_matches(op, context, profile)
                 for op in build_operations(self._base, self._draft)
@@ -2058,6 +2243,7 @@ class Backend(QObject):
                     "Wait for the current operation before reverting this page."
                 )
             profile = self._page_profile(context)
+            context = self._profile_scope_context(context)
             if (
                 self._partial_apply
                 and not self._mock
@@ -2073,6 +2259,7 @@ class Backend(QObject):
             ]
             fields = operation_fields(operations, self._draft)
             copy_model_fields(self._base, self._draft, fields)
+            self._prune_profile_imports()
             self._clear_conflicts(fields)
             self._error = ""
             self._status = "This page's edits discarded"
@@ -2092,6 +2279,7 @@ class Backend(QObject):
                     "Wait for the current operation before applying this page."
                 )
             profile = self._page_profile(context)
+            context = self._profile_scope_context(context)
             if (
                 self._partial_apply
                 and not self._mock
@@ -2242,6 +2430,8 @@ class Backend(QObject):
         self._last_scoped_submission = None
         self._last_page_submission = None
         self._external_conflicts.clear()
+        self._profile_import_operations.clear()
+        self._profile_import_previews.clear()
         self._base = deepcopy(self._latest)
         self._draft = deepcopy(self._latest)
         self._commit_state = "idle"
@@ -2406,6 +2596,12 @@ class Backend(QObject):
                         for path, names in field_scope.items()
                     }
                     copy_model_fields(desired, self._draft, unchanged)
+                    if page.get("scope") == "profiles":
+                        self._profile_import_operations.setdefault(
+                            page["profilePath"], set()
+                        ).update(
+                            tuple(key) for key in page.get("importedOperations", [])
+                        )
                 for context, desired in self._last_scoped_submission or []:
                     try:
                         path = context["buttonPath"]
@@ -2477,6 +2673,7 @@ class Backend(QObject):
                 self._error = ""
             if not result:
                 self._status = "No supported devices found"
+        self._prune_profile_imports()
         self.changed.emit()
         if page_context:
             self._page_apply_context = None

@@ -33,6 +33,7 @@ def main():
     from PySide6.QtQuick import (
         QQuickWindow,  # noqa: F401 - registers native window wrapper
     )
+    from . import __version__
     from .backend import Backend
     from .help import Handbook
     from .recorder import MacroRecorder
@@ -47,6 +48,7 @@ def main():
     preview_dark = True if args.dark else False if args.mock else None
     desktop_style = DesktopStyle(preview_dark)
     app.setApplicationName("Piper Kirigami")
+    app.setApplicationVersion(__version__)
     app.setOrganizationName("libratbag")
     backend = Backend(mock=args.mock, fixture="all")
     recorder = MacroRecorder()

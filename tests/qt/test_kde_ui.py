@@ -11,7 +11,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCENARIOS = [
+    "shell_menu_about",
     "overview",
+    "device_selector",
     "mapping",
     "gshift",
     "led",
@@ -76,6 +78,16 @@ def test_native_kde_ui(scenario, tmp_path):
             [1200, 820],
             [960, 700],
         ]
+    if scenario == "device_selector":
+        assert result["device_selector_sizes_checked"] == [960, 1050, 1400]
+        assert result["device_selector_font_points_checked"] == [11, 14]
+        assert result["all_connected_labels_measured"]
+        assert result["long_names_capped_without_header_overlap"]
+        assert result["model_change_remeasured"]
+        assert result["profile_and_child_navigation_preserved"]
+        assert result["sensitivity_has_no_advanced_shortcut"]
+        assert result["advanced_sidebar_keyboard_navigation"]
+        assert result["transport_writes"] == 0
     if scenario == "search":
         assert result["tab_search_state_sync"]
     if scenario == "footer":

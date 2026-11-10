@@ -62,6 +62,9 @@ def desktop_application():
     else:
         _APP = existing
     _APP.setApplicationName("Piper KDE QA")
+    from qt_piper import __version__
+
+    _APP.setApplicationVersion(__version__)
     _APP.setOrganizationName("libratbag")
     _APP.setFont(
         original_ui.QFont(
@@ -332,8 +335,9 @@ class KDEHarness(original_ui.UIHarness):
         )
 
     def toggle_theme(self):
-        self.click("appMenuButton")
-        self.click("themeToggle")
+        # Preview palettes are test controls, never production menu actions.
+        self.desktop_style.setDark(not self.desktop_style.dark)
+        self.settle(300)
 
     def focus_with_tab(self, name):
         try:
@@ -886,6 +890,177 @@ def scenario_overview(h):
         "gshift_assignment_indices": shifted,
         "normal_layout": normal_layout,
         "gshift_layout": shifted_layout,
+    }
+
+
+def scenario_device_selector(h):
+    """Check native text/arrow geometry, not only the ComboBox's outer box."""
+    from PySide6.QtCore import QRect
+    from PySide6.QtGui import QFontMetricsF
+    from PySide6.QtWidgets import QStyle, QStyleOptionComboBox
+
+    selector = h.find("deviceSelect")
+    points = h.app.font().pointSize()
+    widths = [960, 1050, 1400]
+    measurements = []
+
+    def check_header(require_all_names):
+        previous_right = None
+        for name in [
+            "sectionTitle",
+            "deviceLabel",
+            "deviceSelect",
+            "profileLabel",
+            "profileSelect",
+        ]:
+            item = h.find(name)
+            assert h.fully_visible(item), f"Header control {name} is clipped"
+            left = item.mapToScene(QPointF(0, 0)).x()
+            if previous_right is not None:
+                assert left >= previous_right - 0.5, f"Header control {name} overlaps"
+            previous_right = left + item.width()
+        # KDE draws a noneditable ComboBox through QStyle, not its invisible
+        # QML TextField. Inspect Breeze's actual edit-field subcontrol to include
+        # the arrow and frame in the available text width.
+        option = QStyleOptionComboBox()
+        option.rect = QRect(0, 0, round(selector.width()), round(selector.height()))
+        text_rect = h.app.style().subControlRect(
+            QStyle.ComplexControl.CC_ComboBox,
+            option,
+            QStyle.SubControl.SC_ComboBoxEditField,
+        )
+        metrics = QFontMetricsF(selector.property("font"))
+        text_widths = {
+            device["name"]: max(
+                metrics.horizontalAdvance(device["name"]),
+                metrics.boundingRect(device["name"]).right(),
+            )
+            for device in h.backend.devices
+        }
+        assert text_rect.width() < selector.width(), "Must reserve native arrow/frame"
+        if require_all_names:
+            assert max(text_widths.values()) <= text_rect.width(), (
+                f"Device name clips at {h.window.width()}px/{points}pt: "
+                f"{text_widths}, available={text_rect.width()}"
+            )
+        assert (
+            selector.width() <= selector.implicitWidth() + 4.5
+        ), "Short names must not grow to fill the toolbar"
+        assert selector.width() <= selector.property("widthBudget") + 0.5
+        measurements.append(
+            {
+                "window_width": h.window.width(),
+                "font_points": points,
+                "control_width": selector.width(),
+                "native_implicit_width": selector.implicitWidth(),
+                "available_text_width": text_rect.width(),
+                "label_widths": text_widths,
+            }
+        )
+
+    # Natural width covers every connected label, even while a shorter device
+    # is selected. Resizing and repeated selection must not change that width.
+    for width in widths:
+        h.window.resize(width, 700)
+        h.settle(150)
+        check_header(True)
+        natural_width = selector.width()
+        for device in ["Capability", "G600", "Capability", "G600"]:
+            h.select_device(device)
+            check_header(True)
+            assert abs(selector.width() - natural_width) <= 0.5
+        h.combo("profileSelect", 1)
+        assert h.backend.selectedProfileIndex == 1
+        h.combo("profileSelect", 0)
+        h.edit_target(0)
+        check_header(True)
+        h.back()
+        h.capture(f"device-selector-{width}-{points}pt")
+
+    original_names = [device["name"] for device in h.backend.devices]
+
+    def change_name(name):
+        # Change only mock presentation data, retaining the count and selection.
+        # The desktop style must remeasure model resets, not only added devices.
+        for snapshot in [h.backend._draft, h.backend._base, h.backend._latest]:
+            snapshot[1]["name"] = name
+        h.backend.changed.emit()
+        h.settle(200)
+
+    original_implicit = selector.implicitWidth()
+    change_name("Logitech G502 X PLUS Wireless Gaming Mouse")
+    assert selector.implicitWidth() > original_implicit + 40
+    for width in widths:
+        h.window.resize(width, 700)
+        h.settle(150)
+        check_header(points == 11 and width >= 1050)
+    change_name("Very long connected device name " * 8)
+    for width in widths:
+        h.window.resize(width, 700)
+        h.settle(150)
+        check_header(False)
+        assert selector.width() < selector.implicitWidth() / 2
+        h.select_device("Very long")
+        h.select_device("G600")
+        h.edit_target(0)
+        check_header(False)
+        h.back()
+    change_name(original_names[1])
+    assert abs(selector.implicitWidth() - original_implicit) <= 0.5
+    h.window.resize(960, 700)
+    h.settle(150)
+    h.click("sensitivityTab")
+    assert h.window.findChild(original_ui.QObject, "advancedSettingsLink") is None
+    h.focus_with_tab("advancedTab")
+    h.key(Qt.Key.Key_Return)
+    assert h.window.property("page") == 3
+    assert h.window.findChild(original_ui.QObject, "advancedReportRate") is None
+    for name in ["angleSnapping", "debounce"]:
+        assert h.fully_visible(h.find(name))
+    assert not h.backend.dirty and h.backend._transport.calls == []
+    font_points = [points]
+    if points != 14:
+        # Start a separate native engine so cached Kirigami/font metrics really
+        # use the larger application font from startup.
+        output = h.output / "device-selector-14pt"
+        env = os.environ.copy()
+        env["PIPER_TEST_FONT_POINTS"] = "14"
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "tools/verify-kde-ui.py"),
+                "--scenario",
+                "device_selector",
+                "--output",
+                str(output),
+            ],
+            env=env,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=150,
+        )
+        assert completed.returncode == 0, completed.stdout + completed.stderr
+        large = json.loads((output / "kde-ui-verification.json").read_text())[
+            "results"
+        ][0]
+        assert large["passed"] and large["device_selector_font_points_checked"] == [14]
+        h.interactions.extend(large["interactions"])
+        h.screenshots.extend(large["screenshots"])
+        h.qml_warnings.extend(large["qml_warnings"])
+        measurements.extend(large["device_selector_measurements"])
+        font_points.append(14)
+    return {
+        "device_selector_sizes_checked": widths,
+        "device_selector_font_points_checked": font_points,
+        "device_selector_measurements": measurements,
+        "all_connected_labels_measured": True,
+        "long_names_capped_without_header_overlap": True,
+        "model_change_remeasured": True,
+        "profile_and_child_navigation_preserved": True,
+        "sensitivity_has_no_advanced_shortcut": True,
+        "advanced_sidebar_keyboard_navigation": True,
+        "transport_writes": 0,
     }
 
 
@@ -2690,8 +2865,7 @@ def check_event_row_contrast(h):
     def luminance(color):
         values = [color.redF(), color.greenF(), color.blueF()]
         linear = [
-            v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4
-            for v in values
+            v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4 for v in values
         ]
         return sum(v * weight for v, weight in zip(linear, [0.2126, 0.7152, 0.0722]))
 
@@ -2714,8 +2888,13 @@ def check_event_row_contrast(h):
             a, b = sorted([luminance(background), luminance(foreground)])
             ratio = (b + 0.05) / (a + 0.05)
             checked.append(
-                {"dark": dark, "row": index, "background": background.name(),
-                 "foreground": foreground.name(), "contrast": round(ratio, 2)}
+                {
+                    "dark": dark,
+                    "row": index,
+                    "background": background.name(),
+                    "foreground": foreground.name(),
+                    "contrast": round(ratio, 2),
+                }
             )
             assert ratio >= 4.5, checked[-1]
     h.desktop_style.setDark(original_dark)
@@ -2854,8 +3033,53 @@ def scenario_visual_events(h):
     }
 
 
+def scenario_shell_menu_about(h):
+    before = h.view_snapshot()
+    assert h.window.findChild(original_ui.QObject, "themeToggle") is None
+    assert h.window.findChild(original_ui.QObject, "pendingChangesStatus") is None
+    menu = h.find("appMenu")
+    button = h.find("appMenuButton")
+    assert button.property("text") == "Show Menu"
+    for dark, width, points in [(False, 1050, 11), (True, 960, 14)]:
+        h.desktop_style.setDark(dark)
+        font = h.app.font()
+        font.setPointSize(points)
+        h.app.setFont(font)
+        h.window.resize(width, 700)
+        h.settle(200)
+        h.click("appMenuButton")
+        assert menu.property("visible")
+        assert menu.property("y") >= button.height()
+        h.click("appMenuButton")
+        assert not menu.property("visible"), "Clicking the trigger must close the menu"
+        h.click("appMenuButton")
+        h.key(Qt.Key.Key_Escape)
+        assert not menu.property("visible")
+        h.click("appMenuButton")
+        h.click("aboutMenuItem")
+        dialog = h.find("aboutDialog")
+        assert dialog.property("visible")
+        for name in ["aboutOverviewTab", "aboutComponentsTab", "aboutAuthorsTab"]:
+            h.click(name)
+            assert h.fully_visible(h.find(name))
+            h.capture(f"{name}-{'dark' if dark else 'light'}-{points}pt")
+        h.key(Qt.Key.Key_Escape)
+        assert not dialog.property("visible")
+    h.assert_view_unchanged(before)
+    return {
+        "menu_trigger_remains_usable": True,
+        "about_tabs": 3,
+        "theme_chooser_removed": True,
+        "redundant_footer_status_removed": True,
+        "sizes_checked": [[1050, 700, 11], [960, 700, 14]],
+        "transport_writes": 0,
+    }
+
+
 SCENARIOS = {
+    "shell_menu_about": scenario_shell_menu_about,
     "overview": scenario_overview,
+    "device_selector": scenario_device_selector,
     "mapping": scenario_mapping,
     "gshift": scenario_gshift,
     "led": scenario_led,

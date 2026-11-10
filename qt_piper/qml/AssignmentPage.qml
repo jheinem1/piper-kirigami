@@ -250,19 +250,20 @@ Pane {
         Kirigami.FormLayout {
             id: mappingForm
             objectName: "assignmentForm"
-            Layout.preferredWidth:Math.min(mappingScroll.availableWidth,Kirigami.Units.gridUnit*46)
-            Layout.alignment:Qt.AlignHCenter | Qt.AlignTop
-            Layout.fillHeight:false
-            Layout.topMargin:Kirigami.Units.largeSpacing*3
-            FontMetrics { id: formLabelMetrics; font: Kirigami.Theme.defaultFont }
-            wideMode: width>=controlWidth+Math.max(formLabelMetrics.advanceWidth("Linux keycode:"),formLabelMetrics.advanceWidth("Assignment:"))+Kirigami.Units.largeSpacing*2
-            readonly property real compactControlWidth: Math.min(controlWidth,Kirigami.Units.gridUnit*18)
-            readonly property real controlWidth: Math.min(Kirigami.Units.gridUnit*32,Math.max(Kirigami.Units.gridUnit*12,width-Kirigami.Units.gridUnit*10))
+            // FormLayout centers its label/field grid. Keep the fields at the
+            // same comfortable width instead of stretching them with the page.
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+            Layout.leftMargin: Kirigami.Units.largeSpacing
+            Layout.rightMargin: Kirigami.Units.largeSpacing
+            Layout.topMargin: Kirigami.Units.largeSpacing*3
+            readonly property real controlWidth: Math.min(Kirigami.Units.gridUnit*18,Math.max(0,width))
             Item {
-                Layout.maximumWidth: visible ? Number.POSITIVE_INFINITY : 0
+                Layout.maximumWidth: visible ? mappingForm.controlWidth : 0
                 Kirigami.FormData.label:"Assignment:"
                 Kirigami.FormData.buddyFor:actionType
-                Layout.preferredWidth:Math.min(actionType.implicitWidth+Kirigami.Units.gridUnit*2,Kirigami.Units.gridUnit*18)
+                Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth; Layout.minimumWidth: 0
                 implicitWidth:actionType.implicitWidth
                 implicitHeight:actionType.implicitHeight+Kirigami.Units.smallSpacing*2
                 NativeComboBox {
@@ -278,6 +279,7 @@ Pane {
                 Kirigami.FormData.label: dialog.chordOnly ? "Shortcut:" : "Sequence:"
                 text: dialog.chordOnly ? dialog.macroPreview(macroJson.text) : dialog.visualEvents.length+(dialog.visualEvents.length===1 ? " event" : " events")
                 Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth
+                Layout.maximumWidth: visible ? mappingForm.controlWidth : 0
                 wrapMode: Text.WordWrap
             }
             Label {
@@ -285,12 +287,14 @@ Pane {
                 visible: dialog.types[actionType.currentIndex]==="macro" && dialog.chordOnly
                 text: "G600 shortcuts support one key with modifiers."
                 Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth
+                Layout.maximumWidth: visible ? mappingForm.controlWidth : 0
                 wrapMode: Text.WordWrap; color: Kirigami.Theme.disabledTextColor
             }
             Item {
-                Layout.maximumWidth: visible ? Number.POSITIVE_INFINITY : 0
+                Layout.maximumWidth: visible ? mappingForm.controlWidth : 0
                 visible: dialog.types[actionType.currentIndex]==="button"
                 Kirigami.FormData.label: "Mouse button:"
+                Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth; Layout.minimumWidth: 0
                 Kirigami.FormData.buddyFor: mouseButtonPicker
                 implicitWidth: mouseButtonPicker.implicitWidth
                 implicitHeight: mouseButtonPicker.implicitHeight+Kirigami.Units.smallSpacing*2
@@ -304,10 +308,10 @@ Pane {
                 }
             }
             Item {
-                Layout.maximumWidth: visible ? Number.POSITIVE_INFINITY : 0
+                Layout.maximumWidth: visible ? mappingForm.controlWidth : 0
                 visible: dialog.types[actionType.currentIndex]==="key"
                 Kirigami.FormData.label: "Key:"
-                Layout.fillWidth: true; Layout.preferredWidth: mappingForm.compactControlWidth; Layout.minimumWidth: 0
+                Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth; Layout.minimumWidth: 0
                 Kirigami.FormData.buddyFor: keyPicker
                 implicitWidth: keyPicker.implicitWidth
                 implicitHeight: keyPicker.implicitHeight+Kirigami.Units.smallSpacing*2
@@ -321,17 +325,17 @@ Pane {
                 }
             }
             Label {
-                Layout.maximumWidth: visible ? Number.POSITIVE_INFINITY : 0
+                Layout.maximumWidth: visible ? mappingForm.controlWidth : 0
                 visible: dialog.types[actionType.currentIndex]==="key"
                 text: dialog.chordOnly ? "For key combinations, choose Keyboard shortcut." : "For key combinations, choose Macro."
-                wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.preferredWidth: mappingForm.compactControlWidth
+                wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth
                 color: Kirigami.Theme.disabledTextColor
             }
             Item {
-                Layout.maximumWidth: visible ? Number.POSITIVE_INFINITY : 0
+                Layout.maximumWidth: visible ? mappingForm.controlWidth : 0
                 visible: dialog.types[actionType.currentIndex]==="special"
                 Kirigami.FormData.label: "Action:"
-                Layout.fillWidth: true; Layout.preferredWidth: mappingForm.compactControlWidth; Layout.minimumWidth: 0
+                Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth; Layout.minimumWidth: 0
                 Kirigami.FormData.buddyFor: specialAction
                 implicitWidth: specialAction.implicitWidth
                 implicitHeight: specialAction.implicitHeight+Kirigami.Units.smallSpacing*2
@@ -344,10 +348,10 @@ Pane {
                 }
             }
             Label {
-                Layout.maximumWidth: visible ? Number.POSITIVE_INFINITY : 0
+                Layout.maximumWidth: visible ? mappingForm.controlWidth : 0
                 visible: dialog.types[actionType.currentIndex]==="none"
                 text: "This button will have no assignment."
-                wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.preferredWidth: mappingForm.compactControlWidth
+                wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.preferredWidth: mappingForm.controlWidth
             }
         }
             Item {

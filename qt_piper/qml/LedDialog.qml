@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Dialogs as QtDialogs
 import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
@@ -22,6 +23,7 @@ Dialog {
         return "";
     }
     function load(value) {
+        colorDialog.close();
         led=value; ledIndex=value.index; backendValidation="";
         modes=value.modes || [0,1,2,3];
         modeLabels=modes.map(function(m) { return ["Off","Solid","Cycle","Breathing"][m] || String(m) });
@@ -43,43 +45,97 @@ Dialog {
         target: duration.contentItem
         function onTextChanged() { dialog.backendValidation=""; }
     }
+    // QtQuick.Dialogs uses the platform color chooser, as KDE's ColorButton
+    // does. Only acceptance updates this dialog's draft; preview and Cancel
+    // never stage a backend change.
+    QtDialogs.ColorDialog {
+        id: colorDialog
+        objectName: "ledColorDialog"
+        title: "Choose lighting color"
+        parentWindow: dialog.parent ? dialog.parent.Window.window : null
+        onAccepted: if (dialog.visible && dialog.led.colorDepth > 0) colorField.text=selectedColor.toString();
+        onVisibleChanged: if (!visible) Qt.callLater(function() {
+            if (dialog.visible) {
+                colorButton.forceActiveFocus(Qt.PopupFocusReason);
+            }
+        });
+    }
+    onClosed: colorDialog.close()
     title: led.name || "Lighting zone " + (ledIndex+1)
-    modal: true; anchors.centerIn: parent
-    width: Kirigami.Units.gridUnit*29
+    modal: true
+    focus: true
+    anchors.centerIn: parent
+    width: Math.min(Kirigami.Units.gridUnit*34,parent ? parent.width-Kirigami.Units.largeSpacing*4 : Kirigami.Units.gridUnit*34)
     padding: Kirigami.Units.largeSpacing*2
     standardButtons: Dialog.NoButton
     contentItem: ColumnLayout {
         spacing: Kirigami.Units.largeSpacing*2
         Kirigami.FormLayout {
+            id: lightingForm
+            objectName: "ledForm"
+            readonly property real controlWidth: Math.min(Kirigami.Units.gridUnit*18,Math.max(0,width))
             NativeComboBox {
                 id: mode; objectName: "ledMode"
                 Kirigami.FormData.label: "Effect:"
                 Accessible.name: "Lighting effect"
                 model: dialog.modeLabels
                 onActivated: dialog.backendValidation=""
-                Layout.preferredWidth: Kirigami.Units.gridUnit*14
+                Layout.fillWidth: true
+                Layout.preferredWidth: lightingForm.controlWidth
+                Layout.maximumWidth: lightingForm.controlWidth
             }
             RowLayout {
                 Kirigami.FormData.label: "Color:"
+                Kirigami.FormData.buddyFor: colorButton
+                Layout.fillWidth: true
+                Layout.preferredWidth: lightingForm.controlWidth
+                Layout.maximumWidth: lightingForm.controlWidth
                 spacing: Kirigami.Units.largeSpacing
-                Rectangle {
-                    implicitWidth: Kirigami.Units.iconSizes.smallMedium; implicitHeight: implicitWidth
-                    color: /^#[0-9a-fA-F]{6}$/.test(colorField.text) ? colorField.text : "transparent"
-                    border.color: Kirigami.Theme.disabledTextColor
-                    enabled: colorField.enabled
-                    opacity: enabled ? 1 : 0.5
+                Button {
+                    id: colorButton; objectName: "ledColorButton"
+                    Layout.preferredWidth: Kirigami.Units.gridUnit*3
+                    enabled: dialog.led.colorDepth > 0
+                    Accessible.name: "Choose lighting color"
+                    Accessible.description: "Open the system color chooser. Current color: "+colorField.text
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Choose a color"
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: Kirigami.Units.smallSpacing
+                        radius: 1
+                        color: /^#[0-9a-fA-F]{6}$/.test(colorField.text) ? colorField.text : "transparent"
+                        border.color: Kirigami.Theme.disabledTextColor
+                        opacity: colorButton.enabled ? 1 : 0.5
+                    }
+                    onClicked: {
+                        colorDialog.selectedColor=/^#[0-9a-fA-F]{6}$/.test(colorField.text) ? colorField.text : (dialog.led.color || "#00aaff");
+                        colorDialog.open();
+                    }
                 }
                 TextField {
                     id: colorField; objectName: "ledColor"
                     Accessible.name: "Lighting color"
                     enabled: dialog.led.colorDepth > 0
                     onTextChanged: dialog.backendValidation=""
-                    Layout.fillWidth: true; placeholderText: "#RRGGBB"
+                    Layout.fillWidth: true; Layout.minimumWidth: 0; placeholderText: "#RRGGBB"
+                    Accessible.description: "Color in hexadecimal. Use the color button to select a color visually."
                 }
             }
-            Label { visible: !(dialog.led.colorDepth > 0); text: "Color adjustment is not supported."; color: Kirigami.Theme.disabledTextColor }
+            Label {
+                visible: !(dialog.led.colorDepth > 0)
+                text: "Color adjustment is not supported."
+                color: Kirigami.Theme.disabledTextColor
+                Layout.fillWidth: true
+                Layout.preferredWidth: lightingForm.controlWidth
+                Layout.maximumWidth: visible ? lightingForm.controlWidth : 0
+                wrapMode: Text.WordWrap
+            }
             RowLayout {
                 Kirigami.FormData.label: "Brightness:"
+                Kirigami.FormData.buddyFor: brightness
+                Layout.fillWidth: true
+                Layout.preferredWidth: lightingForm.controlWidth
+                Layout.maximumWidth: lightingForm.controlWidth
                 Slider {
                     id: brightness; objectName: "ledBrightness"
                     Accessible.name: "Lighting brightness"
@@ -92,7 +148,11 @@ Dialog {
             }
             RowLayout {
                 Kirigami.FormData.label: "Effect duration:"
-                SpinBox { id: duration; objectName: "ledDuration"; Accessible.name: "Effect duration in milliseconds"; from: dialog.led.effectDurationMinimum===undefined ? 0 : dialog.led.effectDurationMinimum; to: dialog.led.effectDurationMaximum===undefined ? 10000 : dialog.led.effectDurationMaximum; stepSize: dialog.led.effectDurationStep || 1; editable: true }
+                Kirigami.FormData.buddyFor: duration
+                Layout.fillWidth: true
+                Layout.preferredWidth: lightingForm.controlWidth
+                Layout.maximumWidth: lightingForm.controlWidth
+                SpinBox { id: duration; Layout.fillWidth: true; objectName: "ledDuration"; Accessible.name: "Effect duration in milliseconds"; from: dialog.led.effectDurationMinimum===undefined ? 0 : dialog.led.effectDurationMinimum; to: dialog.led.effectDurationMaximum===undefined ? 10000 : dialog.led.effectDurationMaximum; stepSize: dialog.led.effectDurationStep || 1; editable: true }
                 Label { text: "ms" }
             }
         }
