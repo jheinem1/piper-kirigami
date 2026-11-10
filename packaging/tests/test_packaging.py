@@ -220,6 +220,8 @@ class FlatpakTests(unittest.TestCase):
             "test_reconnect.py",
             "test_profile_files.py",
             "test_profile_files_ui.py",
+            "test_profile_slots_ui.py",
+            "test_advanced_help_ui.py",
             "test_native_forms.py",
             "test_qt_diagrams.py",
             "test_kde_ui.py",
