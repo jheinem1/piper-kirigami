@@ -982,30 +982,45 @@ ApplicationWindow {
                             visible: root.page===3; Layout.fillWidth: true
                             spacing: Kirigami.Units.largeSpacing*2
                             Kirigami.FormLayout {
+                                objectName: "advancedForm"
                                 RowLayout {
                                     Kirigami.FormData.label: "Angle snapping:"
+                                    Kirigami.FormData.buddyFor: angleSnapping
+                                    spacing: Kirigami.Units.smallSpacing
                                     CheckBox {
+                                        id: angleSnapping
                                         text: "Enabled"; objectName: "angleSnapping"; Accessible.name: "Enable angle snapping"
                                         enabled: root.profile.angleSnapping !== undefined && root.profile.angleSnapping !== -1
                                         checked: root.profile.angleSnapping === 1; onClicked: backend.setAngleSnapping(checked)
                                     }
-                                    Label { visible: root.profile.angleSnapping === undefined || root.profile.angleSnapping === -1; text: "Not supported"; color: root.subtle }
+                                    Label { visible: !angleSnapping.enabled; text: "Not supported"; color: root.subtle }
+                                    ContextHelpButton {
+                                        objectName: "angleSnappingInfo"
+                                        text: "About angle snapping"
+                                        helpText: angleSnapping.enabled ? "Angle snapping adjusts pointer movement to help draw straight lines." : "This device’s ratbagd driver does not support angle snapping."
+                                    }
                                 }
-                                NativeComboBox {
-                                    objectName: "debounce"
+                                RowLayout {
                                     Kirigami.FormData.label: "Debounce time:"
-                                    Accessible.name: "Debounce time"
-                                    Layout.preferredWidth: Kirigami.Units.gridUnit*18
-                                    Layout.maximumWidth: Kirigami.Units.gridUnit*18
-                                    model: root.profile.debounces || []; enabled: count > 0
-                                    currentIndex: model.indexOf(root.profile.debounce)
-                                    displayText: count ? currentText + " ms" : "Not supported"
-                                    onActivated: backend.setDebounce(Number(currentText))
+                                    Kirigami.FormData.buddyFor: debounce
+                                    spacing: Kirigami.Units.smallSpacing
+                                    NativeComboBox {
+                                        id: debounce
+                                        objectName: "debounce"
+                                        Accessible.name: "Debounce time"
+                                        Layout.preferredWidth: Kirigami.Units.gridUnit*18
+                                        Layout.maximumWidth: Kirigami.Units.gridUnit*18
+                                        model: root.profile.debounces || []; enabled: count > 0
+                                        currentIndex: model.indexOf(root.profile.debounce)
+                                        displayText: count ? currentText + " ms" : "Not supported"
+                                        onActivated: backend.setDebounce(Number(currentText))
+                                    }
+                                    ContextHelpButton {
+                                        objectName: "debounceInfo"
+                                        text: "About debounce time"
+                                        helpText: debounce.enabled ? "Debounce time filters repeated signals from a single button press. A longer delay can prevent unintended double clicks." : "This device’s ratbagd driver does not support changing debounce time."
+                                    }
                                 }
-                            }
-                            ContextHelpButton {
-                                Layout.alignment: Qt.AlignRight
-                                helpText: "Unavailable settings are not supported by this device’s ratbagd driver."
                             }
                         }
                         Item { Layout.preferredHeight: Kirigami.Units.largeSpacing*2 }
