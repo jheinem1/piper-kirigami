@@ -914,6 +914,10 @@ def scenario_device_selector(h):
             "profileSelect",
         ]:
             item = h.find(name)
+            if name == "deviceLabel" and not item.property("visible"):
+                controls = h.find("sectionHeaderControls")
+                assert controls.width() < controls.property("fullControlsWidth")
+                continue
             assert h.fully_visible(item), f"Header control {name} is clipped"
             left = item.mapToScene(QPointF(0, 0)).x()
             if previous_right is not None:
@@ -953,6 +957,7 @@ def scenario_device_selector(h):
                 "font_points": points,
                 "control_width": selector.width(),
                 "native_implicit_width": selector.implicitWidth(),
+                "device_label_visible": h.find("deviceLabel").property("visible"),
                 "available_text_width": text_rect.width(),
                 "label_widths": text_widths,
             }

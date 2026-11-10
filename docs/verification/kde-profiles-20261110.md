@@ -37,7 +37,7 @@ D-Bus daemon. They did not write to physical hardware.
   three mock slots, file/review cancellation, staging, reset and stale-target
   rejection. The complete profile-specific suite was **56 tests**; its backend
   cases overlap the 170-test count above.
-- **7 handbook/desktop-style tests passed** and **15 source-packaging tests passed**.
+- **7 handbook/desktop-style tests passed** and **16 source-packaging tests passed**.
 - The integrated settings verifier passed Sensitivity, Advanced, Profiles and
   Lighting; its page-scope check caught and verified the settled-scope fix.
 - Ruff, Black and `git diff --check` passed. QML regression checks reported no QML
@@ -76,3 +76,20 @@ Both Flatpak and Fedora package checks include the reconnect, profile-file and
 native-form tests. Installed runtime alignment and launch smoke checks remain
 required in CI. Source verification alone does not establish a successful package
 build, published release, desktop installation or JamesOS image build.
+
+## Flatpak follow-up
+
+The first complete Flatpak CI run caught two differences from the host and Fedora
+checks. Its private test daemon disabled traditional D-Bus activation, preventing
+the fake ratbagd service from starting. The test-only Meson setting now enables
+activation; a packaging contract test guards it. The unchanged reconnect suite
+failed before and all six cases passed after rebuilding that daemon in KDE SDK
+6.11. Runtime permissions and production reconnect behavior did not change.
+
+The SDK also resolves Noto Sans to DejaVu Sans, whose G600 name measures
+285.625 pixels at 14 points. At 960 pixels, the assignment-page Back button left
+too little room for that name. The header now hides only the redundant Device
+label when its controls cannot fit, retaining the accessible selector name,
+profile controls, title and natural device-name width. The clipping assertion
+remains intact. Both previously failing targets passed together in the SDK
+(2 passed), before restarting the complete package build.

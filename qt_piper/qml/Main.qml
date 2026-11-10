@@ -589,6 +589,15 @@ ApplicationWindow {
                         objectName: "sectionHeaderControls"
                         width: parent.width
                         spacing: Kirigami.Units.mediumSpacing
+                        // At narrow widths or larger fallback fonts, the device
+                        // name is more useful than its redundant "Device:" label.
+                        // This estimate does not depend on label visibility, so
+                        // resizing cannot create a layout binding loop.
+                        readonly property real fullControlsWidth: Math.min(deviceSelector.implicitWidth+Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit*22)
+                            + profileSelector.Layout.preferredWidth + deviceLabel.implicitWidth + profileLabel.implicitWidth
+                            + (assignmentBackControl.visible ? assignmentBackControl.implicitWidth : 0)
+                            + spacing*(assignmentBackControl.visible ? 6 : 5)
+                            + Math.min(sectionTitle.implicitWidth, Kirigami.Units.gridUnit*3)
                     ToolButton {
                         id: assignmentBackControl
                         objectName: "assignmentBack"
@@ -601,7 +610,7 @@ ApplicationWindow {
                     }
                     Kirigami.Heading { id: sectionTitle; objectName: "sectionTitle"; text: root.assignmentEditing ? root.assignmentTitle : root.pageTitle; level: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.maximumWidth: implicitWidth+Kirigami.Units.smallSpacing; elide: Text.ElideRight }
                     Item { Layout.fillWidth: true; Layout.minimumWidth: 0 }
-                    Label { id: deviceLabel; objectName: "deviceLabel"; text: "Device:" }
+                    Label { id: deviceLabel; objectName: "deviceLabel"; text: "Device:"; visible: sectionHeaderControls.width>=sectionHeaderControls.fullControlsWidth }
                     NativeComboBox {
                         id: deviceSelector
                         objectName: "deviceSelect"
@@ -615,9 +624,9 @@ ApplicationWindow {
                         // of squeezing G600 into a fixed 210px box. Exceptionally
                         // long names yield to the profile controls and page title.
                         readonly property real widthBudget: Math.max(0, sectionHeaderControls.width
-                            - profileSelector.Layout.preferredWidth - deviceLabel.implicitWidth - profileLabel.implicitWidth
+                            - profileSelector.Layout.preferredWidth - (deviceLabel.visible ? deviceLabel.implicitWidth : 0) - profileLabel.implicitWidth
                             - (assignmentBackControl.visible ? assignmentBackControl.implicitWidth : 0)
-                            - sectionHeaderControls.spacing*(assignmentBackControl.visible ? 6 : 5)
+                            - sectionHeaderControls.spacing*((assignmentBackControl.visible ? 6 : 5)-(deviceLabel.visible ? 0 : 1))
                             - Math.min(sectionTitle.implicitWidth, Kirigami.Units.gridUnit*3))
                         Layout.preferredWidth: Math.min(implicitWidth+Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit*22, widthBudget)
                         Layout.minimumWidth: Layout.preferredWidth
