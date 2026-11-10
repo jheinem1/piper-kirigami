@@ -40,4 +40,13 @@ The regression was added before the production fix in commit `622abdb`. Its auto
 - The current Kirigami footer and error-recovery QML scenarios passed with synthetic devices and no QML warnings.
 - Independent safety review reproduced the stale-result race before the generation guard and verified recovery afterward, with no remaining actionable findings.
 
-These checks do not establish a rebuilt/installed package or a post-fix 20-minute live-device run. The natural idle failure was observed against installed code before the change; post-fix reconnection was verified through an activatable, hardware-free D-Bus service. No mouse settings were changed during the real-daemon observation.
+## Natural post-fix verification
+
+The fixed source backend (SHA-256 `55ef6ac7ff078c54cf2ed5943db3bae9d88d8ac0803cb05c200930c70ddaa933`) was then observed against the same real system ratbagd, again with a QCoreApplication event loop and a guard permitting only AddMatch/GetAll:
+
+- 03:40:00 UTC: connected and completed the initial read-only snapshot.
+- 04:00:44 UTC: after 20 minutes 44 seconds without client reads, the real daemon exited cleanly and relinquished its D-Bus name. The bus connection itself remained alive.
+- 04:00:45 UTC: Piper's automatic retry activated ratbagd and restored connected status with no error. Recovery took **1.146 seconds**, without a manual Refresh.
+- The whole run issued 286 GetAll calls and three AddMatch calls, with **zero device writes**. The observer exited successfully after recovery.
+
+The pre-fix natural failure used installed Flatpak code; the post-fix natural success used the corrected source backend on the host. Both were model/event-loop observations rather than visible-window idle tests. The current QML recovery/footer checks used synthetic devices. These results do not themselves establish a rebuilt or installed package. No mouse settings were changed during either real-daemon observation.
