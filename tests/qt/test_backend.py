@@ -372,7 +372,6 @@ async def start_fake_daemon(
 
     bus = await MessageBus(bus_address=address, auth=AuthAnnonymous()).connect()
     service = "org.freedesktop.ratbag1"
-    await bus.request_name(service)
     objects, paths = fixture_objects("all")
     calls = []
 
@@ -428,6 +427,7 @@ async def start_fake_daemon(
         )
 
     bus.add_message_handler(handler)
+    await bus.request_name(service)
     return bus, objects, paths, calls
 
 
