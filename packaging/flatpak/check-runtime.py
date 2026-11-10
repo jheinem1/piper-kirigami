@@ -24,9 +24,12 @@ import shiboken6
 sys.path.insert(0, "/app/share/piper-kirigami")
 from qt_piper.desktop_style import configure_icon_search_paths
 
+# PySide uses private Qt symbols whose ABI changes even in patch releases.
+# A matching major/minor pair is not sufficient (for example 6.11.2/6.11.3).
 assert (
-    PySide6.__version__.split(".")[:2] == QtCore.qVersion().split(".")[:2]
-), f"PySide {PySide6.__version__} != Qt {QtCore.qVersion()}; rebuild with matching KDE/PySide refs"
+    PySide6.__version__ == QtCore.qVersion()
+), f"PySide {PySide6.__version__} != Qt {QtCore.qVersion()}; rebuild with matching KDE/PySide patch versions"
+assert shiboken6.__version__ == PySide6.__version__, "Shiboken/PySide version mismatch"
 assert PySide6.__version__.startswith("6.11."), PySide6.__version__
 app = QtWidgets.QApplication([])
 assert "Breeze" in QtWidgets.QStyleFactory.keys(), "Breeze QWidget style is missing"

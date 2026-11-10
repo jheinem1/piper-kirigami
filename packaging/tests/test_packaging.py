@@ -132,6 +132,24 @@ class FlatpakTests(unittest.TestCase):
         self.assertEqual(metadata.findtext("id"), m["app-id"])
         self.assertEqual(metadata.findtext("launchable"), m["app-id"] + ".desktop")
 
+    def test_runtime_probe_rejects_qt_patch_mismatch(self):
+        # Execute the version guard from the actual probe without importing Qt.
+        from types import SimpleNamespace
+        tree = ast.parse((self.directory / "check-runtime.py").read_text())
+        guards = [node for node in tree.body if isinstance(node, ast.Assert)][:3]
+        check = compile(ast.Module(body=guards, type_ignores=[]), "runtime-version-guards", "exec")
+        def validate(pyside, qt, shiboken):
+            exec(check, {
+                "PySide6": SimpleNamespace(__version__=pyside),
+                "QtCore": SimpleNamespace(qVersion=lambda: qt),
+                "shiboken6": SimpleNamespace(__version__=shiboken),
+            })
+        validate("6.11.3", "6.11.3", "6.11.3")
+        with self.assertRaisesRegex(AssertionError, "patch versions"):
+            validate("6.11.2", "6.11.3", "6.11.2")
+        with self.assertRaisesRegex(AssertionError, "Shiboken/PySide"):
+            validate("6.11.3", "6.11.3", "6.11.2")
+
     def test_permissions_are_narrow(self):
         self.assertEqual(
             set(self.manifest["finish-args"]),

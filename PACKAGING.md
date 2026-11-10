@@ -25,7 +25,24 @@ Only `dbus-next` is added as a runtime Python dependency. Its pure-Python wheel 
 
 Runtime and BaseApp branches receive updates. Every build records the exact installed Platform, SDK and BaseApp OSTree commits in `build-info.json`; these refs are not bundled as separate runtime payloads. The application bundle includes the required BaseApp binding files. For strict rebuilds, use a dedicated builder with the recorded commits, rather than assuming today's branch heads match an older artifact. Archived refs may eventually become unavailable.
 
-The build imports the required PySide modules, checks the Qt/PySide major/minor versions, checks Breeze style/icons/schemes, and runs the actual QML app. Full versions and import paths are saved after the installed-bundle smoke test. A runtime/BaseApp update that breaks private Qt symbols or QML imports is a failed build requiring a matched rebuild, not a reason to install arbitrary pip wheels or disable checks.
+The build imports the required PySide modules, checks identical Qt/PySide/Shiboken patch versions, checks Breeze style/icons/schemes, and runs the actual QML app. Full versions and import paths are saved after the installed-bundle smoke test. A runtime/BaseApp update that breaks private Qt symbols or QML imports is a failed build requiring a matched rebuild, not a reason to install arbitrary pip wheels or disable checks.
+
+### Qt patch updates require a new application bundle
+
+PySide currently links Qt private symbols, including patch-version-specific
+`QObjectPrivate` constructors. Updating `org.kde.Platform//6.11` from Qt 6.11.2
+to 6.11.3 made the old 0.1.2 bundle fail before the UI could start. A successful
+build against yesterday's runtime is not a compatibility guarantee for tomorrow's
+runtime. See [PySide BaseApp issue #44](https://github.com/flathub/io.qt.PySide.BaseApp/issues/44).
+
+Version 0.1.3 must be rebuilt with the matching 6.11.3 BaseApp, SDK and Platform,
+then pass the installed-runtime smoke test. For later runtime patch updates,
+repeat that matched rebuild and update downstream release pins. Do not downgrade
+the shared runtime, copy individual Qt libraries, add fake ABI symbols, or install
+PyPI Qt wheels as a workaround. Those approaches can break other apps or KDE QML
+plugins. JamesOS must smoke-test the installed bundle before redirecting launchers
+or reporting success. This is detection and a release maintenance requirement,
+not an automatic runtime-independent ABI fix.
 
 ## Build locally, without installing the app
 
