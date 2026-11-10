@@ -66,6 +66,7 @@ class DesktopStyle(QObject):
     def __init__(self, dark=None, parent=None):
         super().__init__(parent)
         self._dark = None
+        self._preview_mode = dark is not None
         if dark is None:
             self._follow_system_palette(QApplication.instance().palette())
             QApplication.instance().paletteChanged.connect(self._follow_system_palette)
@@ -82,12 +83,22 @@ class DesktopStyle(QObject):
     def dark(self):
         return bool(self._dark)
 
+    @Property(bool, constant=True)
+    def previewMode(self):
+        """Stock Breeze overrides are reserved for explicit design previews."""
+        return self._preview_mode
+
     @Property(str, constant=True)
     def name(self):
         return "KDE QQC2 Desktop + Breeze"
 
     @Slot(bool)
     def setDark(self, dark):
+        # Production must keep the platform's color scheme and custom accent.
+        # KDE_COLOR_SCHEME_PATH also overrides Kirigami, so restoring QPalette
+        # alone after loading a stock scheme cannot preserve the user's colors.
+        if not self._preview_mode:
+            return
         if self._dark is dark:
             return
         name = "BreezeDark.colors" if dark else "BreezeLight.colors"

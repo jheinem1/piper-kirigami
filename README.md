@@ -29,6 +29,8 @@ Use Python 3.10+ and distribution packages for **PySide6, Qt Quick Controls 2, Q
 ./run-qt.sh --mock --headless --screenshot preview.png
 ```
 
+Normal launches follow the KDE color scheme and custom accent, including platform palette updates. The stock Breeze Light/Dark toggle is a design-preview control available only with `--mock` or `--dark`; it cannot replace desktop colors during normal use.
+
 `requirements-qt.txt` lists Python dependencies for controlled virtual environments; Kirigami/Breeze are system dependencies, not pip packages. `PIPER_KIRIGAMI_QML_PATH` may override the QML import path. A local `.deps` directory is optional and is not distributed.
 
 Without `--mock`, ratbagd must be running and permit device access. The frontend does not access raw HID/input devices or request root. Applying real changes submits them to ratbagd; it does not certify firmware persistence. Although the frontend limits which properties it stages, ratbagd Commit is device-wide. Known daemon dirtiness and stale/conflicting drafts block Apply; another external client can still race the preflight check. Driver reserialization may also affect firmware fields/actions that ratbagd cannot represent. Read-only comparison does not prove lossless physical writes; preserve a rollback snapshot and validate supported changes on the target device before relying on them.

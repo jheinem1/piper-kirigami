@@ -44,7 +44,8 @@ def main():
         os.environ.get("FLATPAK_ID", "org.freedesktop.Piper.Kirigami")
     )
     configure_application(app, force_breeze=args.mock or args.dark)
-    desktop_style = DesktopStyle(True if args.dark else None)
+    preview_dark = True if args.dark else False if args.mock else None
+    desktop_style = DesktopStyle(preview_dark)
     app.setApplicationName("Piper Kirigami")
     app.setOrganizationName("libratbag")
     backend = Backend(mock=args.mock, fixture="all")
