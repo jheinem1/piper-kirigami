@@ -1,6 +1,6 @@
 {
   "url": "https://jheinem1.github.io/piper-kirigami/repo/",
   "collection_id": "io.github.jheinem1.PiperKirigami.Repository",
-  "gpg_fingerprint": null,
+  "gpg_fingerprint": "D5C33936E57050BC1B7A9210632AD854ECF1F599",
   "public_key": "piper-repository.gpg"
 }
