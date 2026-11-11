@@ -38,6 +38,13 @@ trap 'rm -rf "$verify"' EXIT
 ostree --repo="$verify/client" init --mode=archive-z2
 ostree --repo="$verify/client" remote add --set=gpg-verify-summary=true --gpg-import="$key" piper "file://$repo"
 ostree --repo="$verify/client" pull piper app/io.github.jheinem1.PiperKirigami/x86_64/development
+ostree --repo="$verify/untrusted" init --mode=archive-z2
+ostree --repo="$verify/untrusted" remote add --set=gpg-verify=true --set=gpg-verify-summary=true piper "file://$repo"
+mkdir -m 700 "$verify/empty-keyring"
+if GNUPGHOME="$verify/empty-keyring" ostree --repo="$verify/untrusted" pull piper app/io.github.jheinem1.PiperKirigami/x86_64/development; then
+  echo 'Untrusted client unexpectedly accepted the repository' >&2
+  exit 1
+fi
 python3 "$root/write-descriptors.py" "$root/config.json" "$key" "$output"
 cp "$artifacts/release.json" "$output/release.json"
 touch "$output/.nojekyll"

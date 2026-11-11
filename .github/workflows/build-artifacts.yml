@@ -152,13 +152,21 @@ jobs:
           set -euo pipefail
           test -n "$FLATPAK_SIGNING_KEY" || { echo 'Provision FLATPAK_SIGNING_KEY first'; exit 1; }
           sudo apt-get update
-          sudo apt-get install -y flatpak ostree gnupg
+          sudo apt-get install -y flatpak ostree gnupg dbus curl
           export GNUPGHOME=$(mktemp -d "$RUNNER_TEMP/piper-signing.XXXXXXXX")
           chmod 700 "$GNUPGHOME"
           trap 'gpgconf --kill gpg-agent || true; rm -rf "$GNUPGHOME"' EXIT
           printf '%s' "$FLATPAK_SIGNING_KEY" | base64 --decode | gpg --batch --import
           unset FLATPAK_SIGNING_KEY
           bash packaging/repository/build-repository.sh release-artifacts "$RUNNER_TEMP/piper-site"
+          bash packaging/repository/smoke-update.sh "$RUNNER_TEMP/piper-site" "$RUNNER_TEMP/piper-update-evidence"
+      - name: Retain migration and update verification evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: piper-update-verification-${{ github.sha }}
+          path: ${{ runner.temp }}/piper-update-evidence/
+          if-no-files-found: ignore
       - name: Verify and publish exact tested assets without overwriting a release
         env:
           GH_TOKEN: ${{ github.token }}
