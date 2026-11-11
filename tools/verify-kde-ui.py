@@ -951,6 +951,7 @@ def scenario_device_selector(h):
             {
                 "window_width": h.window.width(),
                 "font_points": points,
+                "assignment_editing": bool(h.window.property("assignmentEditing")),
                 "control_width": selector.width(),
                 "native_implicit_width": selector.implicitWidth(),
                 "available_text_width": text_rect.width(),
@@ -974,6 +975,7 @@ def scenario_device_selector(h):
         h.combo("profileSelect", 0)
         h.edit_target(0)
         check_header(True)
+        h.capture(f"device-selector-assignment-{width}-{points}pt")
         h.back()
         h.capture(f"device-selector-{width}-{points}pt")
 

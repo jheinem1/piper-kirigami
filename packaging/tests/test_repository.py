@@ -17,6 +17,11 @@ def module(name):
 
 
 class RepositoryTests(unittest.TestCase):
+    def test_private_test_daemon_supports_service_reactivation(self):
+        recipe = json.loads((ROOT.parent / 'flatpak/dbus-test-daemon.json').read_text())
+        self.assertIn('-Dtraditional_activation=true', recipe['build-commands'][0])
+        self.assertEqual(recipe['cleanup'], ['*'])
+
     def test_promotion_rejects_older_but_not_draft_versions(self):
         check = module('check-promotion').check
         check('v0.1.3', [dict(tag_name='v0.1.2', draft=False), dict(tag_name='v9.0.0', draft=True)])

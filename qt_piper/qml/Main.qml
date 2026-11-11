@@ -618,7 +618,10 @@ ApplicationWindow {
                             - profileSelector.Layout.preferredWidth - deviceLabel.implicitWidth - profileLabel.implicitWidth
                             - (assignmentBackControl.visible ? assignmentBackControl.implicitWidth : 0)
                             - sectionHeaderControls.spacing*(assignmentBackControl.visible ? 6 : 5)
-                            - Math.min(sectionTitle.implicitWidth, Kirigami.Units.gridUnit*3))
+                            // The child-page Back button consumes toolbar space;
+                            // let its already-eliding title yield one grid unit
+                            // before shrinking the device's native text area.
+                            - Math.min(sectionTitle.implicitWidth, Kirigami.Units.gridUnit*(assignmentBackControl.visible ? 2 : 3)))
                         Layout.preferredWidth: Math.min(implicitWidth+Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit*22, widthBudget)
                         Layout.minimumWidth: Layout.preferredWidth
                         Layout.maximumWidth: Layout.preferredWidth
