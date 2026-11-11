@@ -19,8 +19,9 @@ closed until the owner provisions signing and GitHub Pages.
    environment to approved release tags, preferably with owner approval. Set the
    repository's Pages build source to **GitHub Actions**. These are explicit
    owner-controlled setup steps, not performed by this change.
-5. Push a new approved `vX.Y.Z` tag matching the project version, after the commit
-   is on main. Do not reuse an existing release tag or overwrite its assets.
+5. Run the workflow on main with `release_tag=vX.Y.Z` matching the project
+   version; leave the field blank for build-only runs. Alternatively push an
+   approved matching version tag after the commit is on main. Do not reuse an existing release tag or overwrite its assets.
 
 Use a stable signing key across releases. Key rotation requires a separately
 planned, signed transition and client trust update; never generate a new key on
@@ -35,7 +36,8 @@ installed-runtime-tested bundle. A clean temporary client verifies signatures
 while pulling it. A bad key, missing secret, bad checksum or failed check stops
 publication. Source builds and pull requests never get the signing secret.
 
-The job creates a draft release with its exact tested artifacts, uploads the
+The job creates a draft release with its exact tested artifacts (creating its
+exact-source tag for a manual main-branch release), uploads the
 repository to Pages, deploys it, then exposes the release. Publishing is serialized,
 and a lower version cannot replace a higher published version. The repository
 contains the latest release, not every main-branch commit. The existing

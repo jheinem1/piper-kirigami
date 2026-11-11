@@ -6,6 +6,12 @@ on:
     branches: [main]
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Optional vX.Y.Z to publish from main; blank builds/tests only'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -43,9 +49,9 @@ jobs:
             "$RUNNER_TEMP/flatpak-artifacts/io.github.jheinem1.PiperKirigami-x86_64-development.flatpak"
           dbus-run-session -- bash packaging/flatpak/smoke-installed.sh "$RUNNER_TEMP/flatpak-artifacts"
       - name: Prepare versioned release metadata
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: python3 packaging/prepare-release.py "$RUNNER_TEMP/flatpak-artifacts" "$RELEASE_TAG"
       - name: Upload tested Flatpak, source, checksums and build metadata
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -113,7 +119,7 @@ jobs:
 
   release:
     name: Publish signed Flatpak repository
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.release_tag != '')
     needs: [flatpak, rpm]
     runs-on: ubuntu-24.04
     concurrency:
@@ -140,7 +146,7 @@ jobs:
       - name: Reject stale version promotion
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
           gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --slurp \
             | python3 -c 'import json,sys; json.dump([r for page in json.load(sys.stdin) for r in page],sys.stdout)' \
@@ -170,14 +176,22 @@ jobs:
       - name: Verify and publish exact tested assets without overwriting a release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
           cd release-artifacts
           sha256sum --check SHA256SUMS
           # Create fails if the release exists. Never replace previously pinned assets.
+          # Manual publication creates its tag only after exact-source tests pass.
+          # An existing tag is accepted only when it resolves to this exact commit.
+          if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            git fetch origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+            test "$(git rev-parse "$RELEASE_TAG^{commit}")" = "$GITHUB_SHA"
+          fi
           gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
-            --verify-tag --draft --prerelease --title "Piper Kirigami $RELEASE_TAG" \
+            --target "$GITHUB_SHA" --draft --prerelease --title "Piper Kirigami $RELEASE_TAG" \
             --notes "Experimental tested Flatpak. See release.json for source and bundle pins; checksums are not a publisher signature."
+          git fetch origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+          test "$(git rev-parse "$RELEASE_TAG^{commit}")" = "$GITHUB_SHA"
           gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" ./*
       - name: Stage signed repository for GitHub Pages
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
@@ -189,5 +203,5 @@ jobs:
       - name: Expose release after successful repository deployment
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false
