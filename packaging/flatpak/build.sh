@@ -43,6 +43,7 @@ info.update({'app_id': 'io.github.jheinem1.PiperKirigami', 'arch': 'x86_64', 'br
 (out / 'build-info.json').write_text(json.dumps(info, indent=2, sort_keys=True) + '\n')
 PY
 flatpak-builder --user --arch="$ARCH" --force-clean \
+  --collection-id=io.github.jheinem1.PiperKirigami.Repository \
   --state-dir="$WORK/state" --repo="$WORK/repo" \
   "$WORK/build" "$MANIFEST"
 test ! -e "$WORK/build/files/test-tools"

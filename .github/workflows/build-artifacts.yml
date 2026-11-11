@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -41,6 +42,11 @@ jobs:
           flatpak install --user --noninteractive -y --bundle \
             "$RUNNER_TEMP/flatpak-artifacts/io.github.jheinem1.PiperKirigami-x86_64-development.flatpak"
           dbus-run-session -- bash packaging/flatpak/smoke-installed.sh "$RUNNER_TEMP/flatpak-artifacts"
+      - name: Prepare versioned release metadata
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 packaging/prepare-release.py "$RUNNER_TEMP/flatpak-artifacts" "$RELEASE_TAG"
       - name: Upload tested Flatpak, source, checksums and build metadata
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -104,3 +110,76 @@ jobs:
           path: ${{ runner.temp }}/rpm-artifacts/
           if-no-files-found: error
           retention-days: 30
+
+  release:
+    name: Publish signed Flatpak repository
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [flatpak, rpm]
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: piper-flatpak-repository-publish
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Require a release commit from main
+        run: git merge-base --is-ancestor HEAD origin/main
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: piper-kirigami-flatpak-x86_64-${{ github.sha }}
+          path: release-artifacts
+      - name: Reject stale version promotion
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --slurp \
+            | python3 -c 'import json,sys; json.dump([r for page in json.load(sys.stdin) for r in page],sys.stdout)' \
+            | python3 packaging/repository/check-promotion.py "$RELEASE_TAG"
+      - name: Build and verify signed update repository
+        env:
+          FLATPAK_SIGNING_KEY: ${{ secrets.FLATPAK_SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$FLATPAK_SIGNING_KEY" || { echo 'Provision FLATPAK_SIGNING_KEY first'; exit 1; }
+          sudo apt-get update
+          sudo apt-get install -y flatpak ostree gnupg
+          export GNUPGHOME=$(mktemp -d "$RUNNER_TEMP/piper-signing.XXXXXXXX")
+          chmod 700 "$GNUPGHOME"
+          trap 'gpgconf --kill gpg-agent || true; rm -rf "$GNUPGHOME"' EXIT
+          printf '%s' "$FLATPAK_SIGNING_KEY" | base64 --decode | gpg --batch --import
+          unset FLATPAK_SIGNING_KEY
+          bash packaging/repository/build-repository.sh release-artifacts "$RUNNER_TEMP/piper-site"
+      - name: Verify and publish exact tested assets without overwriting a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          cd release-artifacts
+          sha256sum --check SHA256SUMS
+          # Create fails if the release exists. Never replace previously pinned assets.
+          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --draft --prerelease --title "Piper Kirigami $RELEASE_TAG" \
+            --notes "Experimental tested Flatpak. See release.json for source and bundle pins; checksums are not a publisher signature."
+          gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" ./*
+      - name: Stage signed repository for GitHub Pages
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: ${{ runner.temp }}/piper-site
+      - name: Deploy signed Flatpak repository
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+      - name: Expose release after successful repository deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false

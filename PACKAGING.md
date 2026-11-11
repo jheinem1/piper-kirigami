@@ -2,7 +2,7 @@
 
 The primary deliverable is an **x86_64 Flatpak bundle** for the Fedora 44/Bazzite-based JamesOS desktop. It uses the existing KDE 6.11 runtime family and the host's ratbagd 0.18/API 2 service. An optional native Fedora 44 **noarch RPM** is also built for later image-level integration.
 
-These are unsigned, experimental CI artifacts, not stable releases or a Flathub submission. This repository does not install anything on JamesOS, publish a release, or modify its image configuration. Python and QML are packaged as an application; this is not a claim of a separately compiled native frontend.
+These are unsigned, experimental CI artifacts, not stable releases or a Flathub submission. This repository does not install anything on JamesOS or modify its image configuration. Version tags publish tested experimental releases. Python and QML are packaged as an application; this is not a claim of a separately compiled native frontend.
 
 ## Flatpak contract
 
@@ -72,13 +72,13 @@ flatpak install --user ./io.github.jheinem1.PiperKirigami-x86_64-development.fla
 flatpak run io.github.jheinem1.PiperKirigami/x86_64/development --mock
 ```
 
-The bundle references Flathub for its runtime, which must be available or downloadable; this is not an offline runtime installer. It has no update repository and does not automatically enroll JamesOS into a new application feed. A deliberate later image integration should select a tested commit and establish signing/update policy first.
+The bundle references Flathub for its runtime, which must be available or downloadable; this is not an offline runtime installer. The standalone bundle alone does not enroll JamesOS into an application feed. The signed repository workflow and client migration are described in [repository setup](packaging/repository/README.md). A deliberate later image integration should select a tested commit and establish signing/update policy first.
 
 Real-device readiness additionally requires JamesOS tests for host ratbagd access, permissions, reconnect/hotplug, Wayland/X11, on-device writes and firmware persistence. Mock CI cannot establish these. Running without `--mock` uses the host daemon; pressing Apply may alter device settings.
 
 ## CI artifacts
 
-`.github/workflows/build-artifacts.yml` runs on pull requests, pushes to `main` and manual dispatch. Actions are pinned by commit, credentials are not persisted and repository token permission is read-only. There is no release, tag, image-build or deployment job.
+`.github/workflows/build-artifacts.yml` runs on pull requests, pushes to `main`, version tags and manual dispatch. Actions are pinned by commit and credentials are not persisted. Build jobs have read-only tokens. A separate release job receives contents-write permission only for a pushed version tag, after both build jobs succeed. There is no image-build or deployment job.
 
 The primary Flatpak job:
 
@@ -112,3 +112,34 @@ For JamesOS's immutable host, prefer the primary Flatpak route. The RPM is a fut
 ## Validation boundary
 
 Packaging unit tests, JSON/XML/YAML parsing, shell syntax and staged Meson installation can be checked independently of Flatpak/RPM availability. A successful CI run is required before claiming that the actual bundle or RPM built and passed its installed-runtime checks. Hardware validation remains separate even after those jobs pass.
+
+## Versioned release handoff
+
+Push an approved `vX.Y.Z` tag matching `qt-build/meson.build` on a commit already
+in `main`. CI rebuilds and tests that exact commit, including the installed
+Flatpak against its Platform runtime. After both Flatpak and RPM jobs pass, the
+release job verifies checksums and publishes the exact Flatpak CI artifact as a
+GitHub prerelease. It creates a draft first, uploads all assets, then exposes it.
+An existing release is never overwritten, including a partially uploaded draft;
+inspect a failed publication rather than deleting or replacing pinned assets.
+
+`release.json` records the tag, application ID, bundle SHA-256, source commit and
+installed OSTree commit. Copy these pins together into the downstream JamesOS
+release manifest only after CI succeeds. Never substitute a moving latest URL or
+an untested build. The RPM remains a CI artifact, not the selected JamesOS input.
+
+JamesOS must continue checking the downloaded bundle digest and installed app
+commit, then run the packaged runtime probe and mock UI in the actual target
+runtime before activating launchers. Its image checks should validate the shipped
+installer and release manifest, Flatpak prerequisites and ratbagd API compatibility.
+Since this is a user Flatpak, an OS image check alone cannot establish compatibility
+with the user's independently updated KDE runtime. Do not change mouse bindings or
+private profile data as part of compatibility checks.
+
+## Normal Flatpak updates
+
+The [signed GitHub Pages repository](packaging/repository/README.md) replaces
+manual downstream bundle pin bumps once signing, hosting, publication and client
+migration are complete. Preserve the app ID and development branch; clients track
+the newest tested release using their usual Flatpak updater. Do not describe the
+service as live until its HTTP install and two-release update tests pass.
