@@ -56,3 +56,24 @@ class RepositoryTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse((root / 'out').exists())
             self.assertIn('Provision', result.stderr)
+
+    def test_update_fixture_advances_http_metadata_without_changing_bytes(self):
+        script = (ROOT / 'smoke-update.sh').read_text()
+        body = script.split('refresh_summary_timestamps() {\n', 1)[1].split('\n}\n', 1)[0]
+        self.assertIn('marker_create update\nrefresh_summary_timestamps\nswitch_repo "$site/repo"', script)
+        with tempfile.TemporaryDirectory() as temp:
+            site = Path(temp)
+            repo = site / 'repo'
+            repo.mkdir()
+            for name in ('summary', 'summary.sig', 'summary.idx'):
+                (repo / name).write_bytes(b'signed fixture ' + name.encode())
+            before = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in repo.iterdir()}
+            subprocess.run(['bash', '-euc', 'site="$1"\n' + body, 'fixture', temp], check=True)
+            for name, (content, mtime) in before.items():
+                self.assertEqual((repo / name).read_bytes(), content)
+                self.assertGreater((repo / name).stat().st_mtime_ns, mtime)
+
+    def test_release_builds_cannot_be_cancelled_by_routine_pushes(self):
+        workflow = (ROOT.parents[1] / '.github/workflows/build-artifacts.yml').read_text()
+        self.assertIn('group: artifacts-${{ github.workflow }}-${{ inputs.release_tag || github.ref }}', workflow)
+        self.assertIn("cancel-in-progress: ${{ inputs.release_tag == '' && !startsWith(github.ref, 'refs/tags/') }}", workflow)

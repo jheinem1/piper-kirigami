@@ -17,8 +17,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: artifacts-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: artifacts-${{ github.workflow }}-${{ inputs.release_tag || github.ref }}
+  cancel-in-progress: ${{ inputs.release_tag == '' && !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
   flatpak:

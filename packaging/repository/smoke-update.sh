@@ -104,6 +104,18 @@ os.replace(link + '.next', link)
 PY
 }
 
+refresh_summary_timestamps() {
+  # This fixture builds the old repository after the new one. Make the later
+  # HTTP deployment strictly newer at Last-Modified's whole-second precision,
+  # without changing any signed bytes, so conditional requests cannot reuse it.
+  sleep 1
+  for metadata in summary summary.sig summary.idx; do
+    if [[ -f "$site/repo/$metadata" ]]; then
+      touch "$site/repo/$metadata"
+    fi
+  done
+}
+
 # --no-deps scopes this to application origin/commit/data migration. The runtime
 # and real installed app launch have already passed the release's Flatpak job.
 # No --no-gpg-verify, --delete-data, system installation, or application execution.
@@ -125,6 +137,7 @@ flatpak remote-add --user --gpg-import="$key" "$remote" "$url"
 timeout --kill-after=5s 300s flatpak install --user --noninteractive --no-deps "$remote" "$ref"
 check_install "$old_commit"
 marker_create update
+refresh_summary_timestamps
 switch_repo "$site/repo"
 timeout --kill-after=5s 300s flatpak update --user --noninteractive --no-deps "$ref"
 check_install "$new_commit"
