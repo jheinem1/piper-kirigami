@@ -6,6 +6,7 @@ import ast
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import struct
 import sys
@@ -201,6 +202,17 @@ class FlatpakTests(unittest.TestCase):
         commands = "\n".join(self.manifest["modules"][-1]["build-commands"])
         self.assertIn("PATH=/app/test-tools/bin:$PATH", commands)
 
+    def test_private_dbus_daemon_supports_service_activation(self):
+        module = json.loads((self.directory / "dbus-test-daemon.json").read_text())
+        configure = shlex.split(module["build-commands"][0])
+        self.assertEqual(configure[:2], ["meson", "setup"])
+        # The reconnect fixture activates an Exec-only service on its private
+        # bus; the sandbox has no systemd service manager to activate it instead.
+        self.assertEqual(
+            [arg for arg in configure if arg.startswith("-Dtraditional_activation=")],
+            ["-Dtraditional_activation=true"],
+        )
+
     def test_active_tests_and_installed_launch_are_required(self):
         commands = "\n".join(self.manifest["modules"][-1]["build-commands"])
         for test in (
@@ -208,6 +220,8 @@ class FlatpakTests(unittest.TestCase):
             "test_reconnect.py",
             "test_profile_files.py",
             "test_profile_files_ui.py",
+            "test_profile_slots_ui.py",
+            "test_advanced_help_ui.py",
             "test_native_forms.py",
             "test_qt_diagrams.py",
             "test_kde_ui.py",

@@ -121,21 +121,74 @@ ScrollView {
         Frame {
             Layout.fillWidth: true
             padding: 0
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: 0
-                Repeater {
-                    model: page.backendObject.profiles
-                    RadioDelegate {
-                        required property var modelData
-                        required property int index
-                        objectName: "profileSlot"+modelData.index
-                        Layout.fillWidth: true
-                        checked: index===page.backendObject.selectedProfileIndex
-                        enabled: page.backendObject.connected && !page.backendObject.busy
-                        text: "Slot "+(modelData.index+1)+(modelData.rawName ? " · "+modelData.rawName : "")+(modelData.active ? " · Active" : "")+(modelData.enabled ? "" : " · Disabled")
-                        Accessible.name: text
-                        onClicked: page.selectSlot(index)
+            contentItem: ListView {
+                id: slotList
+                objectName: "profileSlotList"
+                implicitHeight: contentHeight
+                interactive: false // The page owns scrolling, including long slot lists.
+                clip: true
+                model: page.backendObject.profiles
+                currentIndex: page.backendObject.selectedProfileIndex
+                keyNavigationEnabled: false
+                activeFocusOnTab: true
+                Accessible.role: Accessible.List
+                Accessible.name: "On-device slots"
+                Accessible.description: "Select a slot to edit. Selecting does not make it active."
+                enabled: page.backendObject.connected && !page.backendObject.busy
+
+                function choose(index) {
+                    if (enabled && index >= 0 && index < count)
+                        page.selectSlot(index);
+                }
+                Keys.onUpPressed: choose(Math.max(0, currentIndex - 1))
+                Keys.onDownPressed: choose(Math.min(count - 1, currentIndex + 1))
+                Keys.onPressed: function(event) {
+                    if (event.key === Qt.Key_Home) { choose(0); event.accepted = true; }
+                    else if (event.key === Qt.Key_End) { choose(count - 1); event.accepted = true; }
+                }
+                Keys.onReturnPressed: choose(currentIndex)
+                Keys.onEnterPressed: choose(currentIndex)
+                Keys.onSpacePressed: choose(currentIndex)
+
+                delegate: ItemDelegate {
+                    id: slotDelegate
+                    required property var modelData
+                    required property int index
+                    objectName: "profileSlot" + modelData.index
+                    width: ListView.view.width
+                    activeFocusOnTab: false
+                    highlighted: index === page.backendObject.selectedProfileIndex
+                    text: "Slot " + (modelData.index + 1) + (modelData.rawName ? " · " + modelData.rawName : "")
+                    readonly property string statusText: modelData.active ? "Active" : (modelData.enabled ? "" : "Disabled")
+                    Accessible.role: Accessible.ListItem
+                    Accessible.name: text
+                    Accessible.description: statusText
+                    Accessible.selected: highlighted
+                    onClicked: {
+                        slotList.forceActiveFocus(Qt.MouseFocusReason);
+                        slotList.choose(index);
+                    }
+                    contentItem: RowLayout {
+                        spacing: Kirigami.Units.largeSpacing
+                        property alias truncated: slotLabel.truncated
+                        Label {
+                            id: slotLabel
+                            objectName: "profileSlotLabel" + slotDelegate.modelData.index
+                            Layout.fillWidth: true
+                            text: slotDelegate.text
+                            textFormat: Text.PlainText
+                            elide: Text.ElideRight
+                            color: slotDelegate.highlighted || slotDelegate.down ? Kirigami.Theme.highlightedTextColor : (slotDelegate.enabled ? Kirigami.Theme.textColor : Kirigami.Theme.disabledTextColor)
+                            Accessible.ignored: true
+                        }
+                        Label {
+                            objectName: "profileSlotStatus" + slotDelegate.modelData.index
+                            text: slotDelegate.statusText
+                            textFormat: Text.PlainText
+                            visible: text !== ""
+                            color: slotDelegate.highlighted || slotDelegate.down ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.disabledTextColor
+                            Accessible.ignored: true
+                        }
                     }
                 }
             }

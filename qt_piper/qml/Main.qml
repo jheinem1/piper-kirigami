@@ -589,6 +589,15 @@ ApplicationWindow {
                         objectName: "sectionHeaderControls"
                         width: parent.width
                         spacing: Kirigami.Units.mediumSpacing
+                        // At narrow widths or larger fallback fonts, the device
+                        // name is more useful than its redundant "Device:" label.
+                        // This estimate does not depend on label visibility, so
+                        // resizing cannot create a layout binding loop.
+                        readonly property real fullControlsWidth: Math.min(deviceSelector.implicitWidth+Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit*22)
+                            + profileSelector.Layout.preferredWidth + deviceLabel.implicitWidth + profileLabel.implicitWidth
+                            + (assignmentBackControl.visible ? assignmentBackControl.implicitWidth : 0)
+                            + spacing*(assignmentBackControl.visible ? 6 : 5)
+                            + Math.min(sectionTitle.implicitWidth, Kirigami.Units.gridUnit*3)
                     ToolButton {
                         id: assignmentBackControl
                         objectName: "assignmentBack"
@@ -601,7 +610,7 @@ ApplicationWindow {
                     }
                     Kirigami.Heading { id: sectionTitle; objectName: "sectionTitle"; text: root.assignmentEditing ? root.assignmentTitle : root.pageTitle; level: 2; Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.maximumWidth: implicitWidth+Kirigami.Units.smallSpacing; elide: Text.ElideRight }
                     Item { Layout.fillWidth: true; Layout.minimumWidth: 0 }
-                    Label { id: deviceLabel; objectName: "deviceLabel"; text: "Device:" }
+                    Label { id: deviceLabel; objectName: "deviceLabel"; text: "Device:"; visible: sectionHeaderControls.width>=sectionHeaderControls.fullControlsWidth }
                     NativeComboBox {
                         id: deviceSelector
                         objectName: "deviceSelect"
@@ -615,13 +624,10 @@ ApplicationWindow {
                         // of squeezing G600 into a fixed 210px box. Exceptionally
                         // long names yield to the profile controls and page title.
                         readonly property real widthBudget: Math.max(0, sectionHeaderControls.width
-                            - profileSelector.Layout.preferredWidth - deviceLabel.implicitWidth - profileLabel.implicitWidth
+                            - profileSelector.Layout.preferredWidth - (deviceLabel.visible ? deviceLabel.implicitWidth : 0) - profileLabel.implicitWidth
                             - (assignmentBackControl.visible ? assignmentBackControl.implicitWidth : 0)
-                            - sectionHeaderControls.spacing*(assignmentBackControl.visible ? 6 : 5)
-                            // The child-page Back button consumes toolbar space;
-                            // let its already-eliding title yield one grid unit
-                            // before shrinking the device's native text area.
-                            - Math.min(sectionTitle.implicitWidth, Kirigami.Units.gridUnit*(assignmentBackControl.visible ? 2 : 3)))
+                            - sectionHeaderControls.spacing*((assignmentBackControl.visible ? 6 : 5)-(deviceLabel.visible ? 0 : 1))
+                            - Math.min(sectionTitle.implicitWidth, Kirigami.Units.gridUnit*3))
                         Layout.preferredWidth: Math.min(implicitWidth+Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit*22, widthBudget)
                         Layout.minimumWidth: Layout.preferredWidth
                         Layout.maximumWidth: Layout.preferredWidth
@@ -976,30 +982,45 @@ ApplicationWindow {
                             visible: root.page===3; Layout.fillWidth: true
                             spacing: Kirigami.Units.largeSpacing*2
                             Kirigami.FormLayout {
+                                objectName: "advancedForm"
                                 RowLayout {
                                     Kirigami.FormData.label: "Angle snapping:"
+                                    Kirigami.FormData.buddyFor: angleSnapping
+                                    spacing: Kirigami.Units.smallSpacing
                                     CheckBox {
+                                        id: angleSnapping
                                         text: "Enabled"; objectName: "angleSnapping"; Accessible.name: "Enable angle snapping"
                                         enabled: root.profile.angleSnapping !== undefined && root.profile.angleSnapping !== -1
                                         checked: root.profile.angleSnapping === 1; onClicked: backend.setAngleSnapping(checked)
                                     }
-                                    Label { visible: root.profile.angleSnapping === undefined || root.profile.angleSnapping === -1; text: "Not supported"; color: root.subtle }
+                                    Label { visible: !angleSnapping.enabled; text: "Not supported"; color: root.subtle }
+                                    ContextHelpButton {
+                                        objectName: "angleSnappingInfo"
+                                        text: "About angle snapping"
+                                        helpText: angleSnapping.enabled ? "Angle snapping adjusts pointer movement to help draw straight lines." : "This device’s ratbagd driver does not support angle snapping."
+                                    }
                                 }
-                                NativeComboBox {
-                                    objectName: "debounce"
+                                RowLayout {
                                     Kirigami.FormData.label: "Debounce time:"
-                                    Accessible.name: "Debounce time"
-                                    Layout.preferredWidth: Kirigami.Units.gridUnit*18
-                                    Layout.maximumWidth: Kirigami.Units.gridUnit*18
-                                    model: root.profile.debounces || []; enabled: count > 0
-                                    currentIndex: model.indexOf(root.profile.debounce)
-                                    displayText: count ? currentText + " ms" : "Not supported"
-                                    onActivated: backend.setDebounce(Number(currentText))
+                                    Kirigami.FormData.buddyFor: debounce
+                                    spacing: Kirigami.Units.smallSpacing
+                                    NativeComboBox {
+                                        id: debounce
+                                        objectName: "debounce"
+                                        Accessible.name: "Debounce time"
+                                        Layout.preferredWidth: Kirigami.Units.gridUnit*18
+                                        Layout.maximumWidth: Kirigami.Units.gridUnit*18
+                                        model: root.profile.debounces || []; enabled: count > 0
+                                        currentIndex: model.indexOf(root.profile.debounce)
+                                        displayText: count ? currentText + " ms" : "Not supported"
+                                        onActivated: backend.setDebounce(Number(currentText))
+                                    }
+                                    ContextHelpButton {
+                                        objectName: "debounceInfo"
+                                        text: "About debounce time"
+                                        helpText: debounce.enabled ? "Debounce time filters repeated signals from a single button press. A longer delay can prevent unintended double clicks." : "This device’s ratbagd driver does not support changing debounce time."
+                                    }
                                 }
-                            }
-                            ContextHelpButton {
-                                Layout.alignment: Qt.AlignRight
-                                helpText: "Unavailable settings are not supported by this device’s ratbagd driver."
                             }
                         }
                         Item { Layout.preferredHeight: Kirigami.Units.largeSpacing*2 }
