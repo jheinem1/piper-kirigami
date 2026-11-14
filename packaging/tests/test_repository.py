@@ -17,6 +17,13 @@ def module(name):
 
 
 class RepositoryTests(unittest.TestCase):
+    def test_release_creates_exact_tag_before_draft(self):
+        workflow = (ROOT.parents[1] / '.github/workflows/build-artifacts.yml').read_text()
+        create_ref = workflow.index('gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs"')
+        create_draft = workflow.index('gh release create "$RELEASE_TAG"')
+        self.assertLess(create_ref, create_draft)
+        self.assertIn('-f ref="refs/tags/$RELEASE_TAG" -f sha="$GITHUB_SHA"', workflow)
+
     def test_private_test_daemon_supports_service_reactivation(self):
         recipe = json.loads((ROOT.parent / 'flatpak/dbus-test-daemon.json').read_text())
         self.assertIn('-Dtraditional_activation=true', recipe['build-commands'][0])
