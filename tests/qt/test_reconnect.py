@@ -102,15 +102,19 @@ def test_idle_service_reactivates_without_manual_refresh(activating_bus, app):
 
         async def wait(condition, timeout=5):
             until = time.monotonic() + timeout
-            while not condition():
+            while True:
+                # Deliver queued connection changes before checking readiness.
+                # Processing events after a true predicate can invalidate it
+                # when the deliberately short-lived service exits on idle.
                 app.processEvents()
+                if condition():
+                    return
                 assert time.monotonic() < until, (backend.status, backend.error)
                 await asyncio.sleep(0.002)
-            app.processEvents()
 
         try:
             await wait(lambda: backend.connected and not backend.busy)
-            assert backend.setReportRate(500)
+            assert backend.setReportRate(500), (backend.status, backend.error)
             for _ in range(2):
                 await wait(lambda: not backend.connected)
                 assert transport.bus.connected  # Service exit, not bus loss.
