@@ -631,8 +631,6 @@ ApplicationWindow {
                         Layout.preferredWidth: Math.min(implicitWidth+Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit*22, widthBudget)
                         Layout.minimumWidth: Layout.preferredWidth
                         Layout.maximumWidth: Layout.preferredWidth
-                        ToolTip.text: "Select device: " + displayText
-                        ToolTip.visible: hovered
                         onActivated: { let target=currentIndex; root.requestNavigation(function() { backend.selectDevice(target); root.clearSelection(); root.shifted=false; }); }
                     }
                     Label { id: profileLabel; objectName: "profileLabel"; text: "Profile:" }
